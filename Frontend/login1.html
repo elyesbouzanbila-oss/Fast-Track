@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" direction="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link id="test" rel="stylesheet" href="test.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/21.0.0/i18next.min.js"></script>
+    <link rel="stylesheet" href="validationform.css">
+    <link id="select-style" rel="stylesheet" href="select.css">
+    <link id="error-style" rel="stylesheet" href="erroe.css">
+    <link id="form-style" rel="stylesheet" href="form.css">
+    <link id="nav-style" rel="stylesheet" href="img.css">
+    
+</head>
+<body class="french">
+  <div class="select-wrapper"></div>
+  <select id="languageSelect" onchange="changeLanguage(this.value)" class="language-select" >
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+    </select>
+    </div>
+    <button id="changeTheme"> <i id="themeIcon" class="fa-solid fa-moon"></i> </button>
+  
+<h3 data-i18n="title_2">transport on tunis</h3>
+<div class="cont-img">
+  <img src="logo.png" alt="Logo" class="logo">
+</div>
+  
+    
+  
+
+  <form class="card" id="loginForm">
+  <div class="bg">
+    <h4 data-i18n="label_username">Email</h4>
+    <input type="email" name="email" id="email" required>
+
+    <h4 data-i18n="label_password">Mot de passe</h4>
+<div style="position: relative;">
+  <input type="password" name="password" id="pass" required style="padding-right: 40px;">
+  <i class="fa-solid fa-eye" id="togglePassword" style="
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #666;"></i>
+</div>
+<p id="errorMessage"  class="error-message" style="display: none;"></p>
+
+    <input type="button" value="Entrée" id="checkButton" data-i18n="[value]submit_btn">
+  </div>
+  <div class="blob"></div>
+  </form>
+
+<script src="config.js"></script>
+<script src="api-client.js"></script>
+<script src="translate.js"></script>
+<script src="lighdark.js"></script>
+<script src="img.js"></script>
+<script>
+  // Login Integration
+  const loginForm = document.getElementById('loginForm');
+  const checkButton = document.getElementById('checkButton');
+  const errorMessage = document.getElementById('errorMessage');
+  const emailInput = document.getElementById('email');
+  const passInput = document.getElementById('pass');
+
+  checkButton.addEventListener('click', async (e) => {
+    e.preventDefault();
+    errorMessage.style.display = 'none';
+    
+    try {
+      const response = await navigationAPI.login(emailInput.value, passInput.value);
+      
+      if (response.success) {
+        // Redirect to home page
+        window.location.href = 'home page.html';
+      } else {
+        errorMessage.textContent = response.error || 'Login failed';
+        errorMessage.style.display = 'block';
+      }
+    } catch (error) {
+      errorMessage.textContent = error.message || 'Network error';
+      errorMessage.style.display = 'block';
+    }
+  });
+
+  // Toggle password visibility
+  const togglePassword = document.getElementById('togglePassword');
+  togglePassword.addEventListener('click', () => {
+    passInput.type = passInput.type === 'password' ? 'text' : 'password';
+    togglePassword.classList.toggle('fa-eye');
+    togglePassword.classList.toggle('fa-eye-slash');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report a Problem</title>
+    <link id="test" rel="stylesheet" href="test.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/21.0.0/i18next.min.js"></script>
+    <link rel="stylesheet" href="validationform.css">
+    <link id="error-style" rel="stylesheet" href="erroe.css">
+    <link id="form1-style" rel="stylesheet" href="form1.css">
+    <link id="nav-style" rel="stylesheet" href="nav2.css">
+    <link id="textarea-style" rel="stylesheet" href="textarea.css">
+    <link id="sel-style" rel="stylesheet" href="sel.css">
+    <link id="select-style" rel="stylesheet" href="select.css">
+    <link id="uploadimage-style" rel="stylesheet" href="uploadimage.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+</head>
+<body class="french">
+  <div class="select-wrapper"></div>
+  <select id="languageSelect" onchange="changeLanguage(this.value)" class="language-select" >
+    <option value="fr">Français</option>
+    <option value="en">English</option>
+    <option value="ar">العربية</option>
+  </select>
+  <button id="changeTheme"> <i id="themeIcon" class="fa-solid fa-moon"></i> </button>
+  
+  <h3 data-i18n="title_2">transport on tunis</h3>
+  <div class="cont-img">
+    <img src="logo.png" alt="Logo" class="logo">
+  </div>
+
+  <form class="card" id="hazardForm">
+    <div class="bg">
+      <div class="select-wrapper1">
+        <select id="hazardType">
+          <option value="">Hazard Type</option>
+          <option value="road_closure">Road Closure</option>
+          <option value="flooding">Flooding</option>
+          <option value="construction">Construction</option>
+          <option value="accident">Accident</option>
+          <option value="pothole">Pothole</option>
+          <option value="landslide">Landslide</option>
+          <option value="unsafe_area">Unsafe Area</option>
+          <option value="other">Other</option>
+        </select>
+        <div class="error-message" id="error-hazardType"></div>
+      </div>
+
+      <div class="select-wrapper1">
+        <select id="severity">
+          <option value="">Severity Level</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+        <div class="error-message" id="error-severity"></div>
+      </div>
+
+      <h4>Location</h4>
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="number" id="latitude" placeholder="Latitude" required style="flex: 1;">
+        <input type="number" id="longitude" placeholder="Longitude" required style="flex: 1;">
+      </div>
+      <button type="button" id="getLocationBtn" style="padding: 8px 15px; margin-bottom: 15px; background-color: gold; color: black; border: none; border-radius: 5px; cursor: pointer;">📍 Get Current Location</button>
+      <div class="error-message" id="error-location"></div>
+
+      <div class="textarea-wrapper">
+        <textarea id="description"></textarea>
+        <label for="description" data-i18n="label_message">Description of problem</label>
+      </div>
+      <br>
+
+      <button type="button" id="submitBtn" class="submit" data-i18n="submit_btn">Report Hazard</button>
+    </div>
+    <div class="blob"></div>
+  </form>
+
+  <script src="config.js"></script>
+  <script src="api-client.js"></script>
+  <script src="translate.js"></script>
+  <script src="lighdark.js"></script>
+  <script src="img.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script>
+    // Hazard Report Integration
+    const hazardForm = document.getElementById('hazardForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const hazardTypeSelect = document.getElementById('hazardType');
+    const severitySelect = document.getElementById('severity');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const descriptionInput = document.getElementById('description');
+    const getLocationBtn = document.getElementById('getLocationBtn');
+
+    // Check if user is logged in
+    if (!navigationAPI.getToken()) {
+      window.location.href = 'login1.html';
+    }
+
+    // Get current location
+    getLocationBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            latitudeInput.value = position.coords.latitude.toFixed(6);
+            longitudeInput.value = position.coords.longitude.toFixed(6);
+          },
+          (error) => {
+            alert('Error getting location: ' + error.message);
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by this browser');
+      }
+    });
+
+    // Form submission
+    submitBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      // Clear previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      
+      // Validate inputs
+      let hasErrors = false;
+      
+      if (!hazardTypeSelect.value) {
+        document.getElementById('error-hazardType').textContent = 'Please select hazard type';
+        hasErrors = true;
+      }
+      
+      if (!severitySelect.value) {
+        document.getElementById('error-severity').textContent = 'Please select severity level';
+        hasErrors = true;
+      }
+      
+      if (!latitudeInput.value || !longitudeInput.value) {
+        document.getElementById('error-location').textContent = 'Location is required';
+        hasErrors = true;
+      }
+      
+      if (hasErrors) return;
+      
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Reporting...';
+        
+        const response = await navigationAPI.reportHazard(
+          hazardTypeSelect.value,
+          parseFloat(latitudeInput.value),
+          parseFloat(longitudeInput.value),
+          severitySelect.value,
+          descriptionInput.value
+        );
+        
+        if (response.success) {
+          alert('Hazard reported successfully!');
+          // Reset form
+          hazardForm.reset();
+          hazardTypeSelect.value = '';
+          severitySelect.value = '';
+          // Redirect to home
+          setTimeout(() => {
+            window.location.href = 'home page.html';
+          }, 1500);
+        } else {
+          alert(response.error || 'Failed to report hazard');
+        }
+      } catch (error) {
+        alert(error.message || 'Network error. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Report Hazard';
+      }
+    });
+
+    // Initialize Choices.js for selects
+    function initChoices(id, placeholder) {
+      const element = document.getElementById(id);
+      new Choices(element, {
+        searchEnabled: true,
+        itemSelectText: '',
+        removeItemButton: false,
+        shouldSort: false,
+        placeholder: true,
+        placeholderValue: placeholder
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initChoices('hazardType', 'Select hazard type');
+      initChoices('severity', 'Select severity level');
+    });
+  </script>
+</body>
+</html>
