@@ -1,8 +1,0 @@
-.typed-word {
-  color: #ffd700;
-  font-weight: bold;
-  border-right: 2px solid #ffd700; /* cursor effect */
-  padding-right: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-}
