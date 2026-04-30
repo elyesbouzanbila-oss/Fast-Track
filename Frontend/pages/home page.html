@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Transport System</title>
+  <link id="typrot" rel="stylesheet" href="../css/typing rotating.css" />
+  <link id="hp" rel="stylesheet" href="../css/home page.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link id="scrole" rel="stylesheet" href="../css/scrole.css">
+  <link id="ii" rel="stylesheet" href="../css/ii.css">
+  <link id="map-style" rel="stylesheet" href="../css/map.css">
+  <!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="../css/enhanced.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+  <img src="../assets/logo.png" alt="Smart Transport Logo" />
+  <span>Smart Transport</span>
+</div>
+      <nav class="nav-menu">
+        <a href="../pages/about.html" id="nav-about">about</a>
+        <a href="#ta1" id="nav-map">Map</a>
+        <a href="../pages/routes.html" id="nav-routes">routes</a>
+        <a href="../pages/reclamation.html" id="nav-complaints">Report Bugs</a>
+        <a href="#footer-bottom" id="nav-contact">contact</a>
+      </nav>
+      <div class="header-icons">
+  <!-- Light/Dark mode toggle -->
+  <button id="theme-toggle" title="Toggle Light/Dark Mode">
+    <i id="themeIcon" class="fas fa-moon"></i>
+  </button>
+
+  <!-- Language select -->
+  <select id="language-select">
+    <option value="en">English</option>
+    <option value="fr">Français</option>
+    <option value="ar">العربية</option>
+  </select>
+  
+  <!-- User Menu -->
+  <div class="user-menu" style="position: relative; display: inline-block;">
+    <button id="userMenuBtn" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer;">
+      <i class="fas fa-user-circle"></i>
+    </button>
+    <div id="userDropdown" style="display: none; position: absolute; right: 0; background: white; border: 1px solid gold; border-radius: 5px; min-width: 150px; z-index: 1000;">
+      <a href="#" id="userProfile" style="display: block; padding: 10px 15px; color: black; text-decoration: none;">Profile</a>
+      <a href="#" id="userLogout" style="display: block; padding: 10px 15px; color: black; text-decoration: none;">Logout</a>
+    </div>
+  </div>
+</div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Smart Transport System</h1>
+    <p class="subtitle">Routes that adapt to weather conditions in real time</p>
+    <p class="extra-info">
+      We chose the best transport for you based on <strong class="typed-word"></strong>.
+    </p>
+  </main>
+<section>
+  <div class="ta" id="ta1">
+    <h1>live Map</h1>
+    <div id="map" style="border: 2px solid rgba(212,175,55,.4); border-radius: 12px; margin: 16px 0 0 0; width: 100%; max-width: 100%; box-sizing: border-box;"></div>
+  </div>
+</section>
+
+<div class="ttt"></div>
+<section>
+  <div class="ta" id="ta3">
+    <h1>Bug Reports</h1>
+    <p class="extra-info" id="complaintsinfo">Found an app bug or malfunction? Use the Report Bugs link in the header.</p>
+    <br>
+  </div>
+</section>
+
+  <footer id="footer-bottom" class="footer-bottom" role="contentinfo">
+    <div class="footer-container">
+      <div class="footer-column">
+        <h4  id="footer-contact-title">Contact</h4>
+        <p  id="footer-address" ><i class="fas fa-map-marker-alt" aria-hidden="true"  ></i> 13 Rue Borjine 1073 – Montplaisir</p>
+        <p><i class="fas fa-phone" aria-hidden="true"></i> <a href="tel:+21671905026">(71) 905-026</a></p>
+        <p><i class="fas fa-fax" aria-hidden="true"></i> (71) 901-559</p>
+        <p><i class="fas fa-envelope" aria-hidden="true"></i> <a href="/cdn-cgi/l/email-protection#3a5855597a4e485b54494a55484e14494e5b4e5f144e54"><span class="__cf_email__" data-cfemail="f5979a96b58187949b86859a8781db8681948190db819b">[email&#160;protected]</span></a></p>
+      </div>
+
+      <div class="footer-column">
+        <h4  id="footer-follow" >Follow Us</h4>
+        <div class="footer-social">
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <a href="#" aria-label="X Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+          <a href="#" aria-label="Twitch"><i class="fab fa-twitch"></i></a>
+          <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-column">
+        <h4  id="footer-links">Links</h4>
+        <a href="#"  id="footer-terms">Terms</a>
+        <a href="#" id="footer-privacy">Privacy</a>
+        <a href="#" id="footer-sitemap">Sitemap</a>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3193.9877077617925!2d10.182546475646069!3d36.81881447224183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12fd35cd636033e1%3A0x9df234cb6f1e638a!2sDGTMP%20Direction%20G%C3%A9n%C3%A9rale%20du%20Transport%20Maritime%20et%20des%20Ports%20Maritimes%20de%20Commerce!5e0!3m2!1sfr!2stn!4v1774280778768!5m2!1sfr!2stn" width="560" height="220" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+
+      <div class="footer-column">
+        <h4  id="footer-feedback-title">Feedback</h4>
+        <p  id="footer-feedback-text">If you have any suggestions, please reach out. We appreciate your input!</p>
+      </div>
+    </div>
+    <div class="footer-copy">
+      Smart Transport System © 2026
+    </div>
+  </footer>
+  <!-- Bouton back to top -->
+<a href="#" id="back-to-top" title="Go to top">
+  <i class="fas fa-arrow-up"></i>
+</a>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/bus-stops-layer.js"></script>
+  <script src="../js/typing rotating.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script src="../js/scrole.js"></script>
+  <script src="../js/lighdark2.js"></script>
+  <!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    function initChoices(id, placeholder , scrollThreshold = 4, scrollHeight = 200) {
+  const element = document.getElementById(id);
+
+  const choices = new Choices(element, {
+    searchEnabled: true,
+    itemSelectText: '',
+    removeItemButton: true,
+    shouldSort: false,
+    placeholder: true,
+    placeholderValue: placeholder
+  });
+
+  // 🔥 IMPORTANT : déclencher le filtre quand on change
+  // Ajouter variable CSS pour stagger automatique
+  const dropdownWrapper = element.closest('.choices');
+  dropdownWrapper.addEventListener('showDropdown', () => {
+    const items = dropdownWrapper.querySelectorAll('.choices__list--dropdown .choices__item--selectable');
+    items.forEach((item, index) => item.style.setProperty('--i', index));
+
+    // Appliquer scroll si le nombre d'options dépasse le seuil
+    if (element.options.length > scrollThreshold) {
+      const dropdown = dropdownWrapper.querySelector('.choices__list--dropdown');
+      dropdown.style.maxHeight = scrollHeight + 'px';
+      dropdown.style.overflowY = 'auto';
+    } else {
+      const dropdown = dropdownWrapper.querySelector('.choices__list--dropdown');
+      dropdown.style.maxHeight = '';
+      dropdown.style.overflowY = '';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Map initializes its own in-map routing controls.
+  if (typeof initHomeMap === 'function') initHomeMap();
+
+  // Check if user is logged in
+  checkUserStatus();
+});
+
+// Check if user is logged in and update UI
+async function checkUserStatus() {
+  const token = navigationAPI.getToken();
+  if (!token) {
+    window.location.href = '../pages/login1.html';
+    return;
+  }
+  
+  try {
+    const response = await navigationAPI.getMe();
+    if (response.success) {
+      const userBtn = document.getElementById('userMenuBtn');
+      const userName = response.data.name || response.data.email || 'User';
+      // Show first name or truncated email in the button
+      const shortName = userName.split(' ')[0].split('@')[0];
+      userBtn.innerHTML = `<i class="fas fa-user-circle"></i> ${shortName}`;
+      userBtn.style.cssText = 'background:none; border:1px solid rgba(212,175,55,.4); border-radius:8px; color:gold; font-size:0.85rem; cursor:pointer; padding:6px 10px; font-family:inherit;';
+    }
+  } catch (error) {
+    navigationAPI.clearToken();
+    window.location.href = '../pages/login1.html';
+  }
+}
+
+// User menu toggle
+document.getElementById('userMenuBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const dropdown = document.getElementById('userDropdown');
+  dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+});
+
+// Logout
+document.getElementById('userLogout').addEventListener('click', (e) => {
+  e.preventDefault();
+  navigationAPI.logout();
+  window.location.href = '../pages/login1.html';
+});
+
+// Route calculation — delegates to map.js which handles map display via the API
+function calculateAndShowRoute() {
+  // FIX: showRoute() is defined in map.js and uses navigationAPI (backend)
+  // instead of a direct OSRM call. It also handles map rendering.
+  const infoEl  = document.getElementById('home-route-info');
+  const errEl   = document.getElementById('home-route-error');
+  if (infoEl)  { infoEl.style.display = 'none'; infoEl.textContent = ''; }
+  if (errEl)   { errEl.style.display  = 'none'; errEl.textContent  = ''; }
+
+  if (typeof showRoute === 'function') {
+    // showRoute() in map.js draws the route; we hook into its result via a callback
+    showRoute((result) => {
+      if (!infoEl) return;
+      if (result.error) {
+        if (errEl) { errEl.textContent = result.error; errEl.style.display = 'block'; }
+      } else {
+        infoEl.textContent =
+          `📍 ${result.dist} km  ·  ⏱ ${result.dur} min${result.demo ? '  (estimated)' : ''}`;
+        infoEl.style.display = 'block';
+      }
+    });
+  } else {
+    if (errEl) { errEl.textContent = 'Map not ready — please wait.'; errEl.style.display = 'block'; }
+  }
+}
+
+function locateMeOnMap() {
+  const infoEl  = document.getElementById('home-route-info');
+  const errEl   = document.getElementById('home-route-error');
+  if (infoEl)  { infoEl.style.display = 'none'; infoEl.textContent = ''; }
+  if (errEl)   { errEl.style.display  = 'none'; errEl.textContent  = ''; }
+
+  if (typeof showCurrentLocationOnMap === 'function') {
+    showCurrentLocationOnMap()
+      .then(() => {
+        if (infoEl) {
+          infoEl.textContent = '📡 Current location found and centered on map.';
+          infoEl.style.display = 'block';
+        }
+      })
+      .catch((err) => {
+        if (errEl) {
+          errEl.textContent = err.message || 'Could not get current location.';
+          errEl.style.display = 'block';
+        }
+      });
+  } else if (errEl) {
+    errEl.textContent = 'Map not ready — please wait.';
+    errEl.style.display = 'block';
+  }
+}
+
+function calculateRouteFromCurrentLocation() {
+  const infoEl  = document.getElementById('home-route-info');
+  const errEl   = document.getElementById('home-route-error');
+  if (infoEl)  { infoEl.style.display = 'none'; infoEl.textContent = ''; }
+  if (errEl)   { errEl.style.display  = 'none'; errEl.textContent  = ''; }
+
+  if (typeof showRouteFromCurrentLocation === 'function') {
+    showRouteFromCurrentLocation((result) => {
+      if (!infoEl) return;
+      if (result.error) {
+        if (errEl) { errEl.textContent = result.error; errEl.style.display = 'block'; }
+      } else {
+        infoEl.textContent =
+          `📍 ${result.dist} km  ·  ⏱ ${result.dur} min${result.demo ? '  (estimated)' : ''}`;
+        infoEl.style.display = 'block';
+      }
+    });
+  } else if (errEl) {
+    errEl.textContent = 'Map not ready — please wait.';
+    errEl.style.display = 'block';
+  }
+}
+
+// Close the dropdown when clicking elsewhere
+document.addEventListener('click', () => {
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) dropdown.style.display = 'none';
+});
+  </script>
+  <script src="../js/transhome.js"></script>
+  <script src="../js/map.js?v=20260430"></script>
+</body>
+</html>

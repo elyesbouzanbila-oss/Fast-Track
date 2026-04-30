@@ -1,0 +1,140 @@
+<div class="slider">
+
+  <div class="slides" id="slides">
+
+    <!-- Slide 1 : Alerte météo -->
+    <div class="slide">
+      <img src="https://picsum.photos/id/1015/800/450">
+      <div class="overlay"></div>
+      <div class="content">
+        <h2>Why We Created This App</h2>
+        <p>We developed this platform to address the ongoing transportation challenges in our country. Public transit can often be unpredictable, delayed, or confusing, making daily travel stressful for many people.</p>
+        <p><strong>Our goal is to solve these everyday issues</strong> by providing clear, real-time information about buses, trains, and other public transportation options.</p>
+        <p>This app is designed for every Tunisian who relies on public transport, helping you plan your journeys efficiently, avoid delays, and stay informed about disruptions or changes in service.</p>
+        <p>By using this app, we hope to make commuting easier, safer, and more predictable for everyone.</p>
+      </div>
+    </div>
+
+    <!-- Slide 2 : Route down -->
+    <div class="slide">
+      <img src="https://picsum.photos/id/1016/800/450">
+      <div class="overlay red"></div>
+      <div class="content">
+        <h2>🚧 Route Unavailable</h2>
+        <p>The route <strong>R2</strong> is currently <strong>out of service</strong> due to operational issues.</p>
+        <p>⚠️ This route will no longer appear on the route map or timetable until it is restored.</p>
+        <p><strong>Important information for travelers:</strong></p>
+        <ul>
+          <li>Check for alternative schedules or replacement routes.</li>
+          <li>Allow extra travel time if you need to go out.</li>
+          <li>Stay updated via our website or app for real-time information.</li>
+        </ul>
+        <p>We apologize for the inconvenience and thank you for your understanding.</p>
+      </div>
+    </div>
+
+    <!-- Slide 3 : Statistiques -->
+    <div class="slide">
+      <img src="https://picsum.photos/id/1018/800/450">
+      <div class="overlay"></div>
+      <div class="content">
+        <h2>🌧️ Weather Alert: Heavy Rain</h2>
+        <p>Due to heavy rain, some roads are unsafe and impassable. Bus services on these routes cannot operate safely.</p>
+        <p><strong>Impacted bus routes:</strong> R1, R3</p>
+        <p><strong>Important safety advice:</strong></p>
+        <ul>
+          <li>Do <strong>not attempt to travel on these roads</strong>, even if you need to reach a specific destination.</li>
+          <li>Use alternative routes or postpone your trip until conditions improve.</li>
+          <li>Stay informed through our website or app for real-time updates.</li>
+        </ul>
+        <p>Your safety is the priority. Please avoid these areas until it is safe to travel.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="btn prev" onclick="prev()">❮</button>
+  <button class="btn next" onclick="next()">❯</button>
+</div>
+
+<style>
+.slider {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  height: 450px;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.slides {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.slide {
+  min-width: 100%;
+  position: relative;
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+
+/* overlay rouge pour route down */
+.overlay.red {
+  background: rgba(150,0,0,0.6);
+}
+
+.content {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  color: white;
+}
+
+.btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  font-size: 25px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.prev { left: 10px; }
+.next { right: 10px; }
+</style>
+
+<script>
+let index = 0;
+const slides = document.getElementById("slides");
+const total = document.querySelectorAll(".slide").length;
+
+function update() {
+  slides.style.transform = `translateX(-${index * 100}%)`;
+}
+
+function next() {
+  index = (index + 1) % total;
+  update();
+}
+
+function prev() {
+  index = (index - 1 + total) % total;
+  update();
+}
+</script>

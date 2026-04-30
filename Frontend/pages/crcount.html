@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up – FastTrack</title>
+    <link id="test" rel="stylesheet" href="../css/test.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/21.0.0/i18next.min.js"></script>
+    <link rel="stylesheet" href="../css/validationform.css">
+    <link id="select-style" rel="stylesheet" href="../css/select.css">
+    <link id="error-style" rel="stylesheet" href="../css/erroe.css">
+    <link id="form1-style" rel="stylesheet" href="../css/form1.css">
+    <link id="nav-style" rel="stylesheet" href="../css/nav2.css">
+    <link rel="stylesheet" href="../css/enhanced.css">
+    <style>
+      /* Keep signup card usable in both themes. */
+      body.signup-page .card {
+        width: min(100%, 560px);
+        max-width: 560px;
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+      }
+
+      body.signup-page form.card {
+        width: 100%;
+        max-width: 560px;
+      }
+
+      body.signup-page .card .bg {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+        padding: 18px 22px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      body.signup-page #submitBtn {
+        width: 100%;
+        height: auto;
+        min-height: 44px;
+        margin-top: 10px;
+      }
+
+      body.signup-page .signup-footer {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      body.signup-page .bg h4,
+      body.signup-page .signup-footer,
+      body.signup-page .signup-footer a,
+      body.signup-page .signup-footer span,
+      body.signup-page .error-message {
+        text-align: center;
+      }
+
+      body.signup-page input[type="text"],
+      body.signup-page input[type="email"],
+      body.signup-page input[type="password"] {
+        text-align: center;
+      }
+
+      body.signup-page .bg > * {
+        width: 100%;
+      }
+
+      body.signup-page .error-message:empty {
+        display: none !important;
+        margin: 0;
+        padding: 0;
+        min-height: 0;
+        border: 0;
+        box-shadow: none;
+        background: transparent !important;
+      }
+
+      body.signup-page .error-message:empty::before {
+        content: none;
+      }
+    </style>
+    <style>
+      body.signup-page {
+        background: linear-gradient(135deg, #dde3ea 0%, #d3dae3 52%, #e2e7ee 100%);
+      }
+
+      body.signup-page #changeTheme {
+        background: linear-gradient(90deg, #091226 0%, #173d72 55%, #091226 100%) !important;
+        color: #f5f9ff !important;
+        border: 1px solid rgba(76, 119, 172, 0.65) !important;
+        box-shadow: 0 2px 12px rgba(9, 18, 38, 0.2) !important;
+      }
+
+      body.signup-page #changeTheme:hover {
+        border-color: rgba(122, 160, 202, 0.95) !important;
+        box-shadow: 0 0 16px rgba(23, 61, 114, 0.32) !important;
+      }
+
+      body.signup-page .select-wrapper {
+        position: fixed;
+        top: 16px;
+        left: 20px;
+        z-index: 9999;
+      }
+
+      body.signup-page .language-select {
+        width: 130px !important;
+        padding: 10px 14px !important;
+        font-size: 0.9rem !important;
+        direction: ltr !important;
+        text-align: left !important;
+        color: #f5f9ff !important;
+        background: linear-gradient(90deg, #091226 0%, #173d72 55%, #091226 100%) !important;
+        border: 1px solid rgba(76, 119, 172, 0.65) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 12px rgba(9, 18, 38, 0.2) !important;
+      }
+
+      body.signup-page .language-select:hover,
+      body.signup-page .language-select:focus,
+      body.signup-page .language-select:focus-visible {
+        border-color: rgba(122, 160, 202, 0.95) !important;
+        box-shadow: 0 0 18px rgba(23, 61, 114, 0.4) !important;
+        outline: none;
+      }
+
+      body.signup-page .select-wrapper::after {
+        display: none !important;
+      }
+
+      body.signup-page .language-select option {
+        background: #e9edf3;
+        color: #10233f;
+      }
+
+      body.signup-page .language-select option:checked,
+      body.signup-page .language-select option:hover {
+        background: #173d72;
+        color: #f5f9ff;
+      }
+    </style>
+</head>
+<body class="french signup-page">
+  <div class="select-wrapper">
+    <select id="languageSelect" onchange="changeLanguage(this.value)" class="language-select">
+      <option value="fr">Français</option>
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+    </select>
+  </div>
+  <button id="changeTheme"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+
+  <h3 data-i18n="title_2">transport on tunis</h3>
+  <div class="cont-img">
+    <img src="../assets/logo.png" alt="Logo" class="logo">
+  </div>
+
+  <form class="card" id="signupForm">
+    <div class="bg" style="background: rgba(16, 35, 63, 0.18); border: 1px solid rgba(86, 118, 159, 0.35); outline: 1px solid rgba(86, 118, 159, 0.55); outline-offset: -1px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);">
+      <h4 data-i18n="label_nom">Full Name</h4>
+      <input type="text" name="name" id="name" autocomplete="name" required>
+      <div class="error-message" id="error-name"></div>
+
+      <h4 data-i18n="label_mail">Email</h4>
+      <input type="email" name="email" id="email" autocomplete="email" required>
+      <div class="error-message" id="error-email"></div>
+
+      <h4 data-i18n="label_password">Password</h4>
+      <div style="position:relative;">
+        <input type="password" name="password" id="password" autocomplete="new-password"
+               required style="padding-right:40px;">
+        <i class="fa-solid fa-eye" id="togglePassword" style="
+            position:absolute; right:10px; top:50%; transform:translateY(-50%);
+            cursor:pointer; color:#666;"></i>
+      </div>
+      <div class="error-message" id="error-password"></div>
+
+      <!-- General API error shown here (e.g. duplicate email) -->
+      <div class="error-message" id="error-general" style="margin-top:8px;"></div>
+
+      <button type="button" id="submitBtn" class="submit" data-i18n="submit_btn">Sign Up</button>
+      <p class="signup-footer">
+        <span data-i18n="signup_prompt">Already have an account?</span>
+        <a href="../pages/login1.html" style="color:gold;" data-i18n="signup_login_link">Login here</a>
+      </p>
+    </div>
+    <div class="blob"></div>
+  </form>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/translate.js"></script>
+  <script src="../js/lighdark.js"></script>
+  <script src="../js/img.js"></script>
+  <script>
+    const submitBtn   = document.getElementById('submitBtn');
+    const nameInput   = document.getElementById('name');
+    const emailInput  = document.getElementById('email');
+    const passInput   = document.getElementById('password');
+
+    // ── Password visibility toggle ───────────────────────────────────────────
+    document.getElementById('togglePassword').addEventListener('click', () => {
+      passInput.type = passInput.type === 'password' ? 'text' : 'password';
+      document.getElementById('togglePassword').classList.toggle('fa-eye');
+      document.getElementById('togglePassword').classList.toggle('fa-eye-slash');
+    });
+
+    // ── Helper: show an error under a specific field ──────────────────────────
+    function fieldErr(id, msg) {
+      const el = document.getElementById('error-' + id);
+      if (el) el.textContent = msg;
+    }
+    function clearErrors() {
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+    }
+
+    // ── Client-side validation ────────────────────────────────────────────────
+    function validate() {
+      clearErrors();
+      let ok = true;
+
+      if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
+        fieldErr('name', i18next.t('error_name_short'));
+        ok = false;
+      }
+      if (!emailInput.value.trim()) {
+        fieldErr('email', i18next.t('error_email_required'));
+        ok = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+        fieldErr('email', i18next.t('error_email_invalid'));
+        ok = false;
+      }
+      if (!passInput.value) {
+        fieldErr('password', i18next.t('error_password_required'));
+        ok = false;
+      } else if (passInput.value.length < 8) {
+        fieldErr('password', i18next.t('error_password_weak'));
+        ok = false;
+      }
+      return ok;
+    }
+
+    // ── Map backend validation errors to the correct field ───────────────────
+    // express-validator v7 uses `path` (not the old `param`).
+    function applyServerErrors(details) {
+      if (!Array.isArray(details)) return;
+      details.forEach(err => {
+        // err.path is the field name: 'name' | 'email' | 'password'
+        const id = 'error-' + (err.path || err.param || 'general');
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = err.msg;
+        } else {
+          // Fallback to general error if field element doesn't exist
+          fieldErr('general', err.msg);
+        }
+      });
+    }
+
+    // ── Form submission ───────────────────────────────────────────────────────
+    submitBtn.addEventListener('click', async () => {
+      if (!validate()) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating account…';
+
+      try {
+        const response = await navigationAPI.signup(
+          nameInput.value.trim(),
+          emailInput.value.trim(),
+          passInput.value
+        );
+
+        // Success — token already stored by api-client.js
+        window.location.href = '../pages/home page.html';
+
+      } catch (err) {
+        // 409 Conflict: email already registered
+        if (err.status === 409) {
+          fieldErr('email', i18next.t('error_email_exists'));
+        // 422 Validation: server-side field errors (use path, not param)
+        } else if (err.status === 422 && err.details) {
+          applyServerErrors(err.details);
+        // 429 Rate limit
+        } else if (err.status === 429) {
+          fieldErr('general', i18next.t('error_rate_limit'));
+        } else {
+          fieldErr('general', err.message || i18next.t('error_unknown'));
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = i18next.t('submit_btn');
+      }
+    });
+  </script>
+</body>
+</html>

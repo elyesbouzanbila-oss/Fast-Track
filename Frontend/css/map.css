@@ -1,0 +1,42 @@
+
+
+#controls {
+  margin: 10px;
+}
+
+select, button {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+  background-color: gold;
+  color: black;
+  font-weight: bold;
+}
+
+#map {
+  height: min(92vh, 980px);
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  border: 3px solid gold;
+  border-radius: 10px;
+}
+
+.map-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  margin-top: 16px;
+}
+.map-sidebar {
+  flex: 0 0 340px;
+  width: min(340px, 30vw);
+  display: flex;
+  flex-direction: column;
+    margin: 20px 0;
+}
+.map-sidebar .map-route-panel,
+.map-sidebar .map-route-legend {
+  width: 100%;

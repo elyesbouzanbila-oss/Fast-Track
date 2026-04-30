@@ -1,0 +1,299 @@
+.sidebar {
+    width: 235px;
+    background-color: rgba(0, 0, 0, 0.8); /* noir translucide */
+    backdrop-filter: blur(10px);
+    color: #FFD700; /* texte doré */
+    height: 100vh;
+    position: fixed;
+    left: 0px;
+    margin-top: 60px;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    border-right: 1px solid rgba(255, 215, 0, 0.4); /* gold border */
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin: 30px 0;
+    font-size: 22px;
+    color: #FFD700; /* doré */
+}
+
+.menu-group {
+    cursor: pointer;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #FFD700;
+    background-color: transparent;
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
+    transition: background 0.3s;
+}
+
+.menu-group:hover {
+    background-color: rgba(255, 215, 0, 0.1); /* hover doré clair */
+}
+
+.submenu {
+    display: none;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.submenu.active {
+    display: flex;
+}
+
+.submenu a,
+.submenue a {
+    padding: 10px 40px;
+    display: block;
+    text-decoration: none;
+    color: #FFD700;
+    font-size: 14px;
+}
+
+.submenu a:hover {
+    background-color: rgba(255, 215, 0, 0.2);
+}
+
+.content {
+    margin-left: 250px;
+    padding: 30px;
+}
+
+.logout {
+    color: #FFCC00 !important; /* jaune vif */
+}
+
+.logout:hover {
+    background-color: rgba(255, 204, 0, 0.2) !important;
+}
+
+.arrow {
+    transition: transform 0.3s;
+}
+
+.arrow.rotate {
+    transform: rotate(90deg);
+}
+
+/* Toggle Button */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 999;
+    background-color: #FFD700;
+    color: black;
+    border: none;
+    padding: 10px 15px;
+    font-size: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Sidebar Mobile Behavior */
+@media (max-width: 800px) {
+    .menu-outline {
+        width: 100px;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        height: 100vh;
+        width: 100px;
+        transition: left 0.3s ease-in-out;
+        z-index: 998;
+    }
+
+    .sidebar.active {
+        left: 0;
+        width: 100px;
+    }
+
+    .supp {
+        display: none;
+    }
+
+    .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: #FFD700;
+        color: black;
+        padding: 8px 10px;
+        border: none;
+        border-radius: 4px;
+        z-index: 999;
+        cursor: pointer;
+    }
+
+    .submenu.active {
+        display: block;
+    }
+
+    .content {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+
+    .menu-group span {
+        font-size: 0.85rem;
+    }
+
+    .arrow {
+        font-size: 0.75rem;
+    }
+
+    .menu-label {
+        position: absolute;
+        display: none;
+        left: -11px !important;
+        top: 20%;
+        z-index: 10;
+        pointer-events: none;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: #FFD700;
+        padding: 8px 12px;
+        font-size: 11px;
+        white-space: nowrap;
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        backdrop-filter: blur(5px);
+    }
+
+    .menu-group:hover .menu-label {
+        display: block;
+    }
+}
+
+@media (min-width: 800px) and (max-width: 1400px) {
+    .menu-outline {
+        width: 150px;
+    }
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        height: 100vh;
+        width: 150px;
+        transition: left 0.3s ease-in-out;
+        z-index: 998;
+    }
+
+    .sidebar.active {
+        left: 0;
+        width: 150px;
+    }
+
+    .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: #FFD700;
+        color: black;
+        padding: 8px 10px;
+        border: none;
+        border-radius: 4px;
+        z-index: 999;
+        cursor: pointer;
+    }
+
+    .submenu.active {
+        display: block;
+    }
+
+    .content {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+
+    .menu-group span {
+        font-size: 0.85rem;
+    }
+
+    .arrow {
+        font-size: 0.75rem;
+    }
+}
+
+.menu-group {
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-outline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 235px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.menu-rect {
+    fill: transparent;
+    stroke: #FFD700; /* gold strokes */
+    stroke-width: 2;
+    stroke-dashoffset: 20;
+    stroke-dasharray: 0 0 10 40 10 40;
+    transition: stroke-dashoffset 0.5s, stroke-dasharray 0.5s;
+}
+
+.menu-group:hover .menu-rect {
+    stroke-dashoffset: 0;
+}
+
+/* Unique patterns per group */
+.group1:hover .menu-rect {
+    stroke-dasharray: 0 2 8 73.3 8 10.7;
+}
+.group2:hover .menu-rect {
+    stroke-dasharray: 0 12.6 9.5 49.3 9.5 31.6;
+}
+.group3:hover .menu-rect {
+    stroke-dasharray: 0 24.5 8.5 27.5 8.5 55.5;
+}
+.group4:hover .menu-rect {
+    stroke-dasharray: 0 34.7 6.9 10.2 6.9 76;
+}
+
+/* Menu labels */
+.menu-label {
+    position: absolute;
+    left: 20px;
+    top: 10%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #FFD700;
+    padding: 8px 12px;
+    font-size: 14px;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    backdrop-filter: blur(5px);
+    display: none;
+    z-index: 10;
+    pointer-events: none;
+}
+.menu-group {
+    position: relative !important;
+}

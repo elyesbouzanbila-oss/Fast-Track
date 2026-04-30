@@ -1,0 +1,133 @@
+# FastTrack — Full Stack Docker Compose
+#
+# Quick start:
+#   docker compose up --build
+#
+# With local OSRM data:
+#   Place processed files in ./Backend/osrm-data/
+#   For car:  osrm-car.osrm  (processed with car profile)
+#   For foot: osrm-foot.osrm (processed with foot profile)
+#   The API talks to the Dockerized OSRM services by default.
+
+services:
+
+  # ── PostgreSQL + PostGIS ──────────────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: nav_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-navdb}
+      POSTGRES_USER: ${DB_USER:-navuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-navpassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./Backend/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - nav_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-navuser} -d ${DB_NAME:-navdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── OSRM — Car routing (requires car-profile .osrm data) ─────────────────
+  osrm-car:
+    image: osrm/osrm-backend:latest
+    container_name: nav_osrm_car
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Backend/osrm-data:/data
+    networks:
+      - nav_network
+    # NOTE: /data/map-car.osrm must be pre-processed with the car profile.
+    # See Backend/scripts/setup-osrm.sh for instructions.
+    command: >
+      osrm-routed
+      --algorithm mld
+      /data/map-car.osrm
+      --max-table-size 10000
+
+  # ── OSRM — Foot routing (requires foot-profile .osrm data) ───────────────
+  osrm-foot:
+    image: osrm/osrm-backend:latest
+    container_name: nav_osrm_foot
+    restart: unless-stopped
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./Backend/osrm-data:/data
+    networks:
+      - nav_network
+    # NOTE: /data/map-foot.osrm must be pre-processed with the foot profile.
+    command: >
+      osrm-routed
+      --algorithm mld
+      /data/map-foot.osrm
+
+  # ── Backend API ───────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: nav_api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-navdb}
+      DB_USER: ${DB_USER:-navuser}
+      DB_PASSWORD: ${DB_PASSWORD:-navpassword}
+      # Routing — Dockerized OSRM is the default path.
+      OSRM_CAR_URL: ${OSRM_CAR_URL:-http://nav_osrm_car:5000}
+      OSRM_FOOT_URL: ${OSRM_FOOT_URL:-http://nav_osrm_foot:5000}
+      # Auth — CHANGE THIS in production
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      # CORS — lock this down in production
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      # Rate limiting
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
+      # Set to 'true' to skip OSRM entirely and return demo routes
+      SKIP_OSRM: ${SKIP_OSRM:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nav_network
+
+  # ── Frontend (Static File Server) ────────────────────────────────────────
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: nav_frontend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    # FIX: API_URL must be the address the BROWSER uses to reach the API.
+    # From a browser, that is always localhost (or the public domain), not the
+    # Docker container name "api" — container names only resolve inside Docker.
+    environment:
+      API_URL: ${API_URL:-http://localhost:3000}
+    depends_on:
+      - api
+    networks:
+      - nav_network
+
+networks:
+  nav_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

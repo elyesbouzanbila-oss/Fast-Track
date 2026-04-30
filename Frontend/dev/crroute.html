@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link id="test" rel="stylesheet" href="test.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/21.0.0/i18next.min.js"></script>
+    <link rel="stylesheet" href="validationform.css">
+    <link id="error-style" rel="stylesheet" href="erroe.css">
+    <link id="form1-style" rel="stylesheet" href="form1.css">
+    <link id="nav-style" rel="stylesheet" href="nav2.css">
+    <link id="textarea-style" rel="stylesheet" href="textarea.css">
+    
+    <link id="sel-style" rel="stylesheet" href="sel.css">
+    <link id="select-style" rel="stylesheet" href="select.css">
+    <link id="uploadimage-style" rel="stylesheet" href="uploadimage.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    
+</head>
+<body class="french">
+
+
+
+
+  <body class="french">
+    <div class="select-wrapper"></div>
+  <select id="languageSelect" onchange="changeLanguage(this.value)" class="language-select" >
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+    </select>
+    </div>
+  
+    <button id="changeTheme"> <i id="themeIcon" class="fa-solid fa-moon"></i> </button>
+  
+   <h3 data-i18n="title_2">transport on tunis</h3>
+   <div class="cont-img">
+  <img src="logo.png" alt="Logo" class="logo">
+</div>
+
+
+  <form method="post"  class="card" action="login1.php" id="loginForm">
+    <div class="bg">
+        <br>
+        <br>
+      <div class="select-wrapper1">
+  <select id="advancedSelect">
+    <option value=""></option>
+    <option value="1">tunis</option>
+    <option value="2">sfax</option>
+    <option value="3">beja</option>
+    <option value="4">autre</option>
+  </select>
+  <div class="error-message" id="error-sel1" data-i18n="error.select1"></div>
+</div>
+<div class="select-wrapper1">
+  <select id="advancedSelect2">
+    <option value=""></option>
+    <option value="1">tunis</option>
+    <option value="2">sfax</option>
+    <option value="3">beja</option>
+    <option value="4">autre</option>
+    <option value="5">AAA</option>
+  </select>
+  <div class="error-message" id="error-sel2" data-i18n="error.select2"></div>
+</div>
+<div class="select-wrapper1">
+  <select id="advancedSelect3">
+    <option value=""></option>
+    <option value="1">métro</option>
+    <option value="2">bus</option>
+    <option value="3">train</option>
+    <option value="4">Autre</option>
+  </select>
+    <div class="error-message" id="error-sel3" data-i18n="error.select3"></div>
+</div>
+<div class="select-wrapper1">
+  <select id="advancedSelect4">
+    <option value=""></option>
+    <option value="1">active</option>
+    <option value="2">inactive</option>
+    
+  </select>
+    <div class="error-message" id="error-sel4" data-i18n="error.select4"></div>
+</div>
+<br>
+<br>
+      <button type="submit" data-text="تسجيل"  class="submit" data-i18n="submit_btn">envoiyer</button>
+      </div>
+  </div>
+  <div class="blob"></div>
+  </form>
+
+<script src="sel.js"></script>
+
+<script src="validroute.js"></script>
+
+<script src="lighdark.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="img.js"></script>
+
+  
+<script>
+    function initChoices(id, placeholder, scrollThreshold = 4, scrollHeight = 200) {
+  const element = document.getElementById(id);
+  const choices = new Choices(element, {
+    searchEnabled: true,
+    itemSelectText: '',
+    removeItemButton: true,
+    shouldSort: false,
+    placeholder: true,
+    placeholderValue: placeholder
+  });
+
+  // Ajouter variable CSS pour stagger automatique
+  const dropdownWrapper = element.closest('.choices');
+  dropdownWrapper.addEventListener('showDropdown', () => {
+    const items = dropdownWrapper.querySelectorAll('.choices__list--dropdown .choices__item--selectable');
+    items.forEach((item, index) => item.style.setProperty('--i', index));
+
+    // Appliquer scroll si le nombre d'options dépasse le seuil
+    if (element.options.length > scrollThreshold) {
+      const dropdown = dropdownWrapper.querySelector('.choices__list--dropdown');
+      dropdown.style.maxHeight = scrollHeight + 'px';
+      dropdown.style.overflowY = 'auto';
+    } else {
+      const dropdown = dropdownWrapper.querySelector('.choices__list--dropdown');
+      dropdown.style.maxHeight = '';
+      dropdown.style.overflowY = '';
+    }
+  });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  initChoices('advancedSelect', 'départ');
+  initChoices('advancedSelect2', 'arrivée');
+  initChoices('advancedSelect3', 'type de transport');
+  initChoices('advancedSelect4', 'état de route');
+});
+</script>
+</body>
+</html>

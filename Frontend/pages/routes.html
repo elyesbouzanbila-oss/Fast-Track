@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Routes - Smart Transport System</title>
+  <link id="typrot" rel="stylesheet" href="../css/typing rotating.css" />
+  <link id="hp" rel="stylesheet" href="../css/home page.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link id="scrole" rel="stylesheet" href="../css/scrole.css">
+  <link id="ii" rel="stylesheet" href="../css/ii.css">
+  <link id="map-style" rel="stylesheet" href="../css/map.css">
+  <link rel="stylesheet" href="../css/enhanced.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <img src="../assets/logo.png" alt="Smart Transport Logo" />
+        <span>Smart Transport</span>
+      </div>
+      <nav class="nav-menu">
+        <a href="../pages/about.html" id="nav-about">about</a>
+        <a href="../pages/home page.html#ta1" id="nav-map">Map</a>
+        <a href="../pages/routes.html" id="nav-routes">routes</a>
+        <a href="../pages/reclamation.html" id="nav-complaints">Report Bugs</a>
+        <a href="#footer-bottom" id="nav-contact">contact</a>
+      </nav>
+      <div class="header-icons">
+        <button id="theme-toggle" title="Toggle Light/Dark Mode">
+          <i id="themeIcon" class="fas fa-moon"></i>
+        </button>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+        </select>
+        <div class="user-menu" style="position: relative; display: inline-block;">
+          <button id="userMenuBtn" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer;">
+            <i class="fas fa-user-circle"></i>
+          </button>
+          <div id="userDropdown" style="display: none; position: absolute; right: 0; background: white; border: 1px solid gold; border-radius: 5px; min-width: 150px; z-index: 1000;">
+            <a href="#" id="userProfile" style="display: block; padding: 10px 15px; color: black; text-decoration: none;">Profile</a>
+            <a href="#" id="userLogout" style="display: block; padding: 10px 15px; color: black; text-decoration: none;">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Available Routes</h1>
+    <p class="subtitle">Browse and filter active and unavailable transport routes.</p>
+  </main>
+
+  <section>
+    <div class="ta" id="ta2">
+      <h1>Available Routes</h1>
+      <div class="filter-buttons">
+        <button onclick="filterRoutes('all', event)" class="active" id="btn-all">All</button>
+        <button onclick="filterRoutes('up', event)" id="btn-available">Available</button>
+        <button onclick="filterRoutes('down', event)" id="btn-unavailable">Unavailable</button>
+      </div>
+      <div class="routes-container">
+
+          <div class="route up" data-from="Tunis" data-to="Sfax" data-transport="Bus">
+              <h3>Tunis → Sfax</h3>
+              <p>Cost: 2€ | Transport: Bus 🚌</p>
+              <p>Status: 🟢 UP</p>
+          </div>
+
+          <div class="route up" data-from="Sousse" data-to="Monastir" data-transport="Metro">
+              <h3>Sousse → Monastir</h3>
+              <p>Cost: 3€ | Transport: Metro 🚇</p>
+              <p>Status: 🟢 UP</p>
+          </div>
+
+          <div class="route down" data-from="Tunis" data-to="Sfax" data-transport="Train">
+              <h3>Tunis → Sfax</h3>
+              <p>Cost: 4€ | Transport: Train 🚆</p>
+              <p>Status: 🔴 DOWN (Weather)</p>
+          </div>
+
+          <div class="route up" data-from="Sousse" data-to="Monastir" data-transport="Bus">
+              <h3>Sousse → Monastir</h3>
+              <p>Cost: 2.5€ | Transport: Bus 🚌</p>
+              <p>Status: 🟢 UP</p>
+          </div>
+
+      </div>
+    </div>
+  </section>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/lighdark2.js"></script>
+  <script src="../js/filter.js"></script>
+  <script>
+    async function checkUserStatus() {
+      const token = navigationAPI.getToken();
+      if (!token) {
+        window.location.href = '../pages/login1.html';
+        return;
+      }
+
+      try {
+        const response = await navigationAPI.getMe();
+        if (response.success) {
+          const userBtn = document.getElementById('userMenuBtn');
+          const userName = response.data.name || response.data.email || 'User';
+          const shortName = userName.split(' ')[0].split('@')[0];
+          userBtn.innerHTML = `<i class="fas fa-user-circle"></i> ${shortName}`;
+          userBtn.style.cssText = 'background:none; border:1px solid rgba(212,175,55,.4); border-radius:8px; color:gold; font-size:0.85rem; cursor:pointer; padding:6px 10px; font-family:inherit;';
+        }
+      } catch (error) {
+        navigationAPI.clearToken();
+        window.location.href = '../pages/login1.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkUserStatus();
+    });
+
+    document.getElementById('userMenuBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dropdown = document.getElementById('userDropdown');
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('userLogout').addEventListener('click', (e) => {
+      e.preventDefault();
+      navigationAPI.logout();
+      window.location.href = '../pages/login1.html';
+    });
+  </script>
+</body>
+</html>

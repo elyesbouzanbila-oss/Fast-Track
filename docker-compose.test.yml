@@ -1,0 +1,32 @@
+# FastTrack — Test Configuration
+# Override docker-compose.yml for testing purposes
+# Usage: docker compose -f docker-compose.yml -f docker-compose.test.yml up
+
+version: '3.9'
+
+services:
+
+  postgres:
+    environment:
+      POSTGRES_DB: ${DB_NAME:-navdb_test}
+      POSTGRES_USER: ${DB_USER:-navuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-navpassword}
+
+  api:
+    environment:
+      NODE_ENV: test
+      DB_NAME: navdb_test
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: navuser
+      DB_PASSWORD: navpassword
+      SKIP_OSRM: 'true'
+      OSRM_CAR_URL: https://router.project-osrm.org
+      OSRM_FOOT_URL: https://router.project-osrm.org
+
+  # Disable OSRM containers for testing
+  osrm-car:
+    profiles: [disabled]
+
+  osrm-foot:
+    profiles: [disabled]

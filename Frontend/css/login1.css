@@ -1,0 +1,114 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+  margin: 0;
+  padding: 30px;
+  color: #2c3e50;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: rgba(255, 255, 255, 0.3); /* translucent white */
+  backdrop-filter: blur(10px); /* blur effect for glassmorphism */
+  color: #2c3e50;
+  height: 100vh;
+  margin-top: 50px;
+  position: fixed;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar h2 {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 22px;
+}
+
+.menu-group {
+  cursor: pointer;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #2c3e50;
+  background-color: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  transition: background 0.3s;
+}
+
+.menu-group:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.submenu {
+  display: none;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.submenu a {
+  padding: 10px 40px;
+  display: block;
+  text-decoration: none;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.submenu a:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.content {
+  margin-left: 250px;
+  padding: 30px;
+}
+
+.logout {
+  color: #c0392b !important;
+}
+
+.logout:hover {
+  background-color: rgba(192, 57, 43, 0.2) !important;
+}
+
+.arrow {
+  transition: transform 0.3s;
+}
+
+.arrow.rotate {
+  transform: rotate(90deg);
+}
+h1,p{
+  margin-left: 20px;
+  margin-right: 300px;
+  position: relative;
+}
+
+body.arabic {
+  direction: rtl;
+  font-family: "Arial", "Tahoma", sans-serif;
+}
+body.french {
+  direction: ltr;
+  font-family: Arial, sans-serif;
+}
+.submenu {
+  display: none;
+  flex-direction: column;
+}
+.arrow.rotate {
+  transform: rotate(90deg);
+}
+#toggleLangBtn {
+  margin: 10px;
+  padding: 6px 14px;
+  background-color: #2c3e50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
