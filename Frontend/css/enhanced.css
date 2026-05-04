@@ -1,0 +1,766 @@
+/* ══════════════════════════════════════════════════════════════════
+   enhanced.css — FastTrack visual polish layer
+   Loaded last on every page; refines the existing dark/gold theme
+   without changing any HTML structure.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. GLOBAL TOKENS ─────────────────────────────────────────── */
+:root {
+  --gold:        #d4af37;
+  --gold-bright: #f5c518;
+  --gold-dim:    rgba(212,175,55,0.18);
+  --dark-0:      #0a0a0a;
+  --dark-1:      #111;
+  --dark-2:      #1a1a1a;
+  --dark-3:      #222;
+  --text-main:   #e8e0d9;
+  --text-muted:  #8a8070;
+  --red-soft:    #e05c5c;
+  --transition:  0.28s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── 2. BODY & PAGE ───────────────────────────────────────────── */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-y: scroll;
+}
+
+body.login-page {
+  padding: 12px 20px;
+  overflow-x: hidden;
+}
+
+body.login-page h3 {
+  margin: 0 0 6px;
+}
+
+body.login-page .cont-img {
+  margin: 4px 0 0;
+}
+
+body.login-page .bg {
+  text-align: center;
+}
+
+body.login-page .bg h4 {
+  text-align: center;
+}
+
+body.login-page #email,
+body.login-page #pass {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Subtle animated page background — feels alive without being distracting */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(33,50,74,.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 90%, rgba(33,50,74,.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 3. INPUTS (all types including email & number) ────────────── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+textarea {
+  width: 100%;
+  padding: 13px 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text-main);
+  background: #121722;
+  border: 1.5px solid #252d38;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  /* Remove browser autofill yellow flash */
+  -webkit-text-fill-color: var(--text-main);
+  caret-color: #8fb0d6;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+textarea:hover {
+  border-color: #404b5d;
+  background: #151b26;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  border-color: #4d678d;
+  background: #171d28;
+  box-shadow: 0 0 0 3px rgba(77,103,141,.16), 0 0 18px rgba(77,103,141,.18);
+}
+
+/* Browser autofill styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #121722 inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+  caret-color: #8fb0d6;
+  border-color: rgba(77,103,141,.24) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ── 4. SUBMIT BUTTON & TYPE=BUTTON ───────────────────────────── */
+input[type="button"],
+input[type="submit"],
+button.submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #f3eadc;
+  background: linear-gradient(110deg, #0b111b 0%, #172231 55%, #0b111b 100%);
+  background-size: 220% 100%;
+  background-position: 0% 0%;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0,0,0,.4);
+  transition: background-position var(--transition), transform var(--transition),
+              box-shadow var(--transition), opacity var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+input[type="button"]:hover,
+input[type="submit"]:hover,
+button.submit:hover {
+  background-position: 100% 0%;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.48);
+}
+
+input[type="button"]:active,
+input[type="submit"]:active,
+button.submit:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(0,0,0,.35);
+}
+
+/* Ripple shimmer on hover */
+input[type="button"]::after,
+input[type="submit"]::after,
+button.submit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.08) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.55s ease;
+}
+input[type="button"]:hover::after,
+input[type="submit"]:hover::after,
+button.submit:hover::after {
+  transform: translateX(100%);
+}
+
+/* Disabled state */
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+button.submit:disabled,
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── 5. CARD / GLASS PANEL ────────────────────────────────────── */
+.card {
+  animation: card-in 0.55s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(22px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+.bg {
+  padding: 32px 36px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-sizing: border-box;
+}
+
+/* Inner border shimmer on card */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(212,175,55,.35) 0%, transparent 50%, rgba(212,175,55,.15) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ── 6. ERROR MESSAGES ────────────────────────────────────────── */
+.error-message {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #e8786e;
+  min-height: 1.1em;
+  padding: 0 4px;
+  /* Smooth height/opacity transition when text changes */
+  transition: color var(--transition);
+  direction: ltr;
+  text-align: left;
+  /* Always visible container; content drives visibility */
+  display: block !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.error-message:not(:empty) {
+  color: var(--red-soft);
+  animation: err-in 0.22s ease both;
+}
+
+body.login-page .error-message:empty {
+  display: none !important;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent !important;
+}
+
+body.login-page .error-message:empty::before {
+  content: none;
+}
+
+@keyframes err-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 7. HEADINGS ──────────────────────────────────────────────── */
+h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+h4 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted) !important;
+  text-shadow: none !important;
+  margin: 14px 0 4px;
+  text-align: left;
+  direction: ltr;
+}
+
+/* ── 8. LOGO ──────────────────────────────────────────────────── */
+.cont-img { margin: 14px 0 0; }
+.logo {
+  width: 90px !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  display: block;
+  filter: drop-shadow(0 0 10px rgba(212,175,55,.4));
+}
+
+body.login-page .logo {
+  width: 120px !important;
+  height: 96px !important;
+  max-width: 120px !important;
+  object-fit: contain;
+}
+
+/* ── 9. THEME / LANGUAGE BUTTONS (top bar) ────────────────────── */
+#changeTheme {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  width: 42px !important;
+  height: 42px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26,26,26,.92) !important;
+  border: 1px solid rgba(212,175,55,.3) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.5);
+  font-size: 1rem;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  z-index: 9999;
+  cursor: pointer;
+}
+
+#changeTheme:hover {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 16px rgba(212,175,55,.3) !important;
+  transform: rotate(15deg);
+}
+
+.select-wrapper {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+  z-index: 9999;
+}
+
+.language-select {
+  width: 130px !important;
+  padding: 10px 14px !important;
+  font-size: 0.88rem !important;
+  direction: ltr !important;
+  text-align: left !important;
+  background: rgba(26,26,26,.92) !important;
+  border: 1px solid rgba(212,175,55,.3) !important;
+  border-radius: 10px !important;
+  color: var(--text-main) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+.language-select:hover  { border-color: var(--gold) !important; }
+
+/* Hide the broken pseudo-element arrow from select.css */
+.select-wrapper::after { display: none !important; }
+
+/* ── 10. MAP PAGE CONTROLS ────────────────────────────────────── */
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgba(16,16,16,.85);
+  border: 1px solid rgba(212,175,55,.18);
+  border-radius: 14px;
+  margin: 16px 20px;
+  backdrop-filter: blur(12px);
+}
+
+#controls select {
+  background: var(--dark-2) !important;
+  color: var(--text-main) !important;
+  border: 1.5px solid #3a3a3a !important;
+  border-radius: 8px !important;
+  padding: 9px 14px !important;
+  font-size: 0.92rem !important;
+  font-weight: 500;
+  min-width: 130px;
+  transition: border-color var(--transition);
+}
+#controls select:hover,
+#controls select:focus {
+  border-color: var(--gold) !important;
+  outline: none;
+}
+
+#controls button,
+#controls input[type="button"] {
+  padding: 9px 22px !important;
+  font-size: 0.9rem !important;
+  border-radius: 8px !important;
+  letter-spacing: .8px;
+}
+
+/* Status / error text on map page */
+#statusMsg {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  letter-spacing: .5px;
+  min-height: 1.4em;
+  padding: 0 20px;
+}
+
+#errorMsg {
+  font-size: 0.86rem;
+  color: var(--red-soft);
+  background: rgba(224,92,92,.08);
+  border: 1px solid rgba(224,92,92,.25);
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin: 4px 20px;
+}
+
+#routeInfo p {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212,175,55,.08);
+  border: 1px solid rgba(212,175,55,.2);
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gold-bright);
+  letter-spacing: .5px;
+}
+
+.demo-banner {
+  font-size: 0.8rem;
+  color: var(--text-muted) !important;
+  border-color: rgba(212,175,55,.15) !important;
+  background: rgba(212,175,55,.04) !important;
+}
+
+.hazard-item {
+  border-left: 3px solid var(--red-soft) !important;
+  background: rgba(224,92,92,.06) !important;
+  border-radius: 6px;
+}
+
+/* ── 11. GET LOCATION BUTTON ──────────────────────────────────── */
+#getLocationBtn {
+  background: transparent !important;
+  color: var(--gold) !important;
+  border: 1.5px solid rgba(212,175,55,.4) !important;
+  border-radius: 8px !important;
+  padding: 9px 16px !important;
+  font-size: 0.88rem !important;
+  letter-spacing: .5px;
+  transition: border-color var(--transition), background var(--transition);
+}
+#getLocationBtn:hover:not(:disabled) {
+  border-color: var(--gold) !important;
+  background: rgba(212,175,55,.06) !important;
+}
+
+/* ── 12. GENERAL UTILITY ──────────────────────────────────────── */
+
+/* Inline link inside forms */
+.card a, .bg a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--transition);
+}
+.card a:hover, .bg a:hover {
+  border-bottom-color: var(--gold);
+}
+
+/* Password toggle icon */
+#togglePassword {
+  color: var(--text-muted) !important;
+  transition: color var(--transition), transform var(--transition);
+}
+#togglePassword:hover { color: var(--gold) !important; transform: scale(1.15); }
+
+/* Map border */
+#map {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  border: 2px solid rgba(212,175,55,.35) !important;
+  box-shadow: 0 0 30px rgba(212,175,55,.08);
+}
+
+/* Leaflet popup polish */
+.leaflet-popup-content-wrapper {
+  background: var(--dark-2) !important;
+  border: 1px solid rgba(212,175,55,.25) !important;
+  border-radius: 10px !important;
+  color: var(--text-main) !important;
+  font-family: inherit !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5) !important;
+}
+.leaflet-popup-tip { background: var(--dark-2) !important; }
+
+/* ── 13. USER DROPDOWN ────────────────────────────────────────────────── */
+#userDropdown {
+  background: rgba(20,20,20,0.97) !important;
+  border: 1px solid rgba(212,175,55,0.35) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
+  min-width: 160px !important;
+  overflow: hidden;
+}
+#userDropdown a {
+  color: var(--text-main) !important;
+  border-bottom: 1px solid rgba(212,175,55,0.1);
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+  transition: background var(--transition), color var(--transition);
+}
+#userDropdown a:hover {
+  background: rgba(212,175,55,0.1) !important;
+  color: var(--gold-bright) !important;
+}
+#userDropdown a:last-child { border-bottom: none; }
+
+/* ── 14. SUBMIT INPUT BUTTON (login page) ─────────────────────────────── */
+input[type="button"]#checkButton {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* ── 15. FORM CARD — responsive height for signup/reclamation ─────────── */
+.card {
+  min-height: unset !important;
+  height: auto !important;
+}
+
+/* ── 16. ERROR MESSAGE — ensure always LTR + visible when not empty ────── */
+.error-message {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* ── 17. SELECT-WRAPPER1 inputs — consistent with global inputs ───────── */
+.select-wrapper1 select {
+  width: 100%;
+  padding: 13px 16px;
+  font-size: 1rem;
+  color: var(--text-main);
+  background: var(--dark-2);
+  border: 1.5px solid #333;
+  border-radius: 10px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.select-wrapper1 select:focus,
+.select-wrapper1 select:hover {
+  border-color: var(--gold);
+}
+
+/* ── 18. CONTROLS BAR — ensure button text is readable ───────────────────*/
+#controls button:not(.bus-stops-toggle) {
+  color: #0d0d0d !important;
+}
+
+body.login-page #changeTheme,
+body.signup-page #changeTheme {
+  background: linear-gradient(90deg, #091226 0%, #173d72 55%, #091226 100%) !important;
+  color: #f5f9ff !important;
+  border: 1px solid rgba(76, 119, 172, 0.65) !important;
+  box-shadow: 0 2px 12px rgba(9, 18, 38, 0.2) !important;
+}
+
+body.login-page #changeTheme:hover,
+body.signup-page #changeTheme:hover {
+  border-color: rgba(122, 160, 202, 0.95) !important;
+  box-shadow: 0 0 16px rgba(23, 61, 114, 0.32) !important;
+}
+
+body.login-page .select-wrapper,
+body.signup-page .select-wrapper {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+  z-index: 9999;
+}
+
+body.login-page .language-select,
+body.signup-page .language-select {
+  width: 130px !important;
+  padding: 10px 14px !important;
+  font-size: 0.9rem !important;
+  direction: ltr !important;
+  text-align: left !important;
+  color: #f5f9ff !important;
+  background: linear-gradient(90deg, #091226 0%, #173d72 55%, #091226 100%) !important;
+  border: 1px solid rgba(76, 119, 172, 0.65) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 12px rgba(9, 18, 38, 0.2) !important;
+}
+
+body.login-page .language-select:hover,
+body.signup-page .language-select:hover {
+  border-color: rgba(122, 160, 202, 0.95) !important;
+  box-shadow: 0 0 16px rgba(23, 61, 114, 0.32) !important;
+}
+
+body.login-page .language-select:focus,
+body.login-page .language-select:focus-visible,
+body.signup-page .language-select:focus,
+body.signup-page .language-select:focus-visible {
+  outline: none;
+  border-color: #8fb0d6 !important;
+  box-shadow: 0 0 18px rgba(23, 61, 114, 0.4) !important;
+}
+
+body.login-page .select-wrapper::after,
+body.signup-page .select-wrapper::after {
+  display: none !important;
+}
+
+body.login-page .language-select option,
+body.signup-page .language-select option {
+  background: #e9edf3;
+  color: #10233f;
+}
+
+body.login-page .language-select option:checked,
+body.login-page .language-select option:hover,
+body.signup-page .language-select option:checked,
+body.signup-page .language-select option:hover {
+  background: #173d72;
+  color: #f5f9ff;
+}
+
+body[data-theme="light"].login-page,
+body[data-theme="light"].signup-page {
+  background: linear-gradient(135deg, #dde3ea 0%, #d3dae3 52%, #e2e7ee 100%) !important;
+}
+
+body[data-theme="light"].login-page .card,
+body[data-theme="light"].signup-page .card {
+  background: linear-gradient(180deg, #0d1b33 0%, #13233f 100%) !important;
+  border: 1px solid rgba(40, 70, 111, 0.55) !important;
+  box-shadow: 0 15px 40px rgba(9, 18, 38, 0.34), inset 0 0 20px rgba(76, 119, 172, 0.1) !important;
+}
+
+body[data-theme="light"].login-page .bg,
+body[data-theme="light"].signup-page .bg {
+  background: rgba(16, 35, 63, 0.18) !important;
+  color: #eaf1fb !important;
+}
+
+body[data-theme="light"].login-page input[type="text"],
+body[data-theme="light"].login-page input[type="email"],
+body[data-theme="light"].login-page input[type="password"],
+body[data-theme="light"].login-page input[type="number"],
+body[data-theme="light"].login-page input[type="date"],
+body[data-theme="light"].login-page select,
+body[data-theme="light"].signup-page input[type="text"],
+body[data-theme="light"].signup-page input[type="email"],
+body[data-theme="light"].signup-page input[type="password"],
+body[data-theme="light"].signup-page input[type="number"],
+body[data-theme="light"].signup-page input[type="date"],
+body[data-theme="light"].signup-page select {
+  background: #10233f !important;
+  color: #eaf1fb !important;
+  border-color: #28466f !important;
+}
+
+body[data-theme="light"].login-page #changeTheme,
+body[data-theme="light"].signup-page #changeTheme,
+body[data-theme="light"].login-page .language-select,
+body[data-theme="light"].signup-page .language-select,
+body[data-theme="light"].login-page input[type="button"],
+body[data-theme="light"].login-page input[type="submit"],
+body[data-theme="light"].login-page button.submit,
+body[data-theme="light"].signup-page input[type="button"],
+body[data-theme="light"].signup-page input[type="submit"],
+body[data-theme="light"].signup-page button.submit {
+  background: linear-gradient(90deg, #091226 0%, #173d72 50%, #091226 100%) !important;
+  color: #f5f9ff !important;
+  border: 1px solid rgba(76, 119, 172, 0.6) !important;
+  box-shadow: 0 6px 20px rgba(9, 18, 38, 0.45) !important;
+}
+
+body[data-theme="light"].login-page #changeTheme:hover,
+body[data-theme="light"].signup-page #changeTheme:hover,
+body[data-theme="light"].login-page .language-select:hover,
+body[data-theme="light"].signup-page .language-select:hover,
+body[data-theme="light"].login-page input[type="button"]:hover,
+body[data-theme="light"].login-page input[type="submit"]:hover,
+body[data-theme="light"].login-page button.submit:hover,
+body[data-theme="light"].signup-page input[type="button"]:hover,
+body[data-theme="light"].signup-page input[type="submit"]:hover,
+body[data-theme="light"].signup-page button.submit:hover {
+  box-shadow: 0 12px 30px rgba(23, 61, 114, 0.52) !important;
+}
+
+body[data-theme="dark"].login-page,
+body[data-theme="dark"].signup-page {
+  background: linear-gradient(135deg, #05070a 0%, #0b1017 50%, #05070a 100%) !important;
+}
+
+body[data-theme="dark"].login-page .card,
+body[data-theme="dark"].signup-page .card {
+  background: linear-gradient(180deg, #0b1017 0%, #121824 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.16) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.76), inset 0 0 24px rgba(212, 175, 55, 0.04) !important;
+}
+
+body[data-theme="dark"].login-page .bg,
+body[data-theme="dark"].signup-page .bg {
+  background: transparent !important;
+}
+
+body[data-theme="dark"].login-page input[type="text"],
+body[data-theme="dark"].login-page input[type="email"],
+body[data-theme="dark"].login-page input[type="password"],
+body[data-theme="dark"].login-page input[type="number"],
+body[data-theme="dark"].login-page input[type="date"],
+body[data-theme="dark"].login-page select,
+body[data-theme="dark"].signup-page input[type="text"],
+body[data-theme="dark"].signup-page input[type="email"],
+body[data-theme="dark"].signup-page input[type="password"],
+body[data-theme="dark"].signup-page input[type="number"],
+body[data-theme="dark"].signup-page input[type="date"],
+body[data-theme="dark"].signup-page select {
+  background: #0f141d !important;
+  color: #e8e0d9 !important;
+  border-color: #2a3442 !important;
+}
+
+body[data-theme="dark"].login-page #changeTheme,
+body[data-theme="dark"].signup-page #changeTheme,
+body[data-theme="dark"].login-page .language-select,
+body[data-theme="dark"].signup-page .language-select,
+body[data-theme="dark"].login-page input[type="button"],
+body[data-theme="dark"].login-page input[type="submit"],
+body[data-theme="dark"].login-page button.submit,
+body[data-theme="dark"].signup-page input[type="button"],
+body[data-theme="dark"].signup-page input[type="submit"],
+body[data-theme="dark"].signup-page button.submit {
+  background: linear-gradient(90deg, #0b111b 0%, #172231 55%, #0b111b 100%) !important;
+  color: #f3eadc !important;
+  border: 1px solid rgba(212, 175, 55, 0.22) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+body[data-theme="dark"].login-page #changeTheme:hover,
+body[data-theme="dark"].signup-page #changeTheme:hover,
+body[data-theme="dark"].login-page .language-select:hover,
+body[data-theme="dark"].signup-page .language-select:hover,
+body[data-theme="dark"].login-page input[type="button"]:hover,
+body[data-theme="dark"].login-page input[type="submit"]:hover,
+body[data-theme="dark"].login-page button.submit:hover,
+body[data-theme="dark"].signup-page input[type="button"]:hover,
+body[data-theme="dark"].signup-page input[type="submit"]:hover,
+body[data-theme="dark"].signup-page button.submit:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.48) !important;
+}

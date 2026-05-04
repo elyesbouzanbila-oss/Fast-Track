@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beautiful Selects</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <style>
+    /* Wrapper global */
+    .select-wrapper1 {
+      width: 300px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin-bottom: 20px;
+    }
+
+    /* Conteneur Choices */
+    .choices {
+      background-color: #000 !important;
+      border-radius: 12px !important;
+      border: 2px solid gold !important;
+      overflow: hidden; /* pour que le fond aille jusqu'au bord */
+    }
+
+    /* Select interne */
+    .choices__inner {
+      border: none !important;
+      width: 100% !important;
+      padding: 10px 15px !important;
+      background-color: transparent !important;
+      color: #FFD700 !important;
+      transition: all 0.3s ease;
+    }
+
+    
+
+    /* Options dropdown */
+    .choices__list--dropdown {
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      display: block !important;
+      visibility: hidden;
+    }
+    .is-open .choices__list--dropdown {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+
+    /* Options individuelles */
+    .choices__list--dropdown .choices__item--selectable {
+      color: #FFD700 !important;
+      background-color: #000 !important;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: all 0.25s ease;
+    }
+    .is-open .choices__list--dropdown .choices__item--selectable {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    /* Hover sur option */
+    .choices__list--dropdown .choices__item--selectable:hover {
+      background-color: #333 !important;
+    }
+
+    /* Bouton de suppression */
+    .choices__button {
+      color: #FFFF00 !important;
+    }
+
+    /* Placeholder */
+    .choices__placeholder {
+      color: #FFD700 !important;
+      opacity: 0.7;
+    }
+
+    /* Stagger automatique avec variable CSS */
+    .choices__list--dropdown .choices__item {
+      transition-delay: calc(var(--i) * 0.05s);
+    }
+  </style>
+</head>
+<body>
+
+<div class="select-wrapper1">
+  <select id="advancedSelect">
+    <option value="">type de réclamation</option>
+    <option value="1">problème horaire</option>
+    <option value="2">problème technique</option>
+    <option value="3">problème de comportement</option>
+    <option value="4">autre</option>
+  </select>
+</div>
+
+<div class="select-wrapper1">
+  <select id="advancedSelect2">
+    <option value="">type transport</option>
+    <option value="1">métro</option>
+    <option value="2">bus</option>
+    <option value="3">problème de comportement</option>
+    <option value="4">autre</option>
+    <option value="5">AAA</option>
+  </select>
+</div>
+
+<div class="select-wrapper1">
+  <select id="advancedSelect3">
+    <option value="">ville</option>
+    <option value="1">Paris</option>
+    <option value="2">Lyon</option>
+    <option value="3">Marseille</option>
+    <option value="4">Autre</option>
+  </select>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+  function initChoices(id, placeholder, scrollThreshold = 4, scrollHeight = 200) {
+  const element = document.getElementById(id);
+  const choices = new Choices(element, {
+    searchEnabled: true,
+    itemSelectText: '',
+    removeItemButton: true,
+    shouldSort: false,
+    placeholder: true,
+    placeholderValue: placeholder
+  });
+
+  // Ajouter variable CSS pour stagger automatique
+  const dropdownWrapper = element.closest('.choices');
+  dropdownWrapper.addEventListener('showDropdown', () => {
+    const items = dropdownWrapper.querySelectorAll('.choices__list--dropdown .choices__item--selectable');
+    items.forEach((item, index) => item.style.setProperty('--i', index));
+
+    // Appliquer scroll si le nombre d'options dépasse le seuil
+    if (element.options.length > scrollThreshold) {
+      const dropdown = dropdownWrapper.querySelector('.choices__list--dropdown');
+      dropdown.style.maxHeight = scrollHeight + 'px';
+      dropdown.style.overflowY = 'auto';
+    } else {
+      const dropdown = dropdownWrapper.querySelector('.choices__list--dropdown');
+      dropdown.style.maxHeight = '';
+      dropdown.style.overflowY = '';
+    }
+  });
+}
+
+// Initialisation
+initChoices('advancedSelect', 'type de réclamation');
+initChoices('advancedSelect2', 'type transport');
+initChoices('advancedSelect3', 'ville');
+</script>
+</body>
+</html>

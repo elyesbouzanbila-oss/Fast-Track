@@ -1,0 +1,146 @@
+/* BLOB SOFT BLUE */
+
+.blob {
+
+  position: absolute;
+
+  z-index: 1;
+
+  top: 50%;
+  left: 50%;
+
+  width: 420px;
+  height: 420px;
+
+  border-radius: 50%;
+
+  background: radial-gradient(circle at 30% 30%, #8fb0d655, #5f7fa844, transparent 70%);
+
+  opacity: 0.6;
+
+  filter: blur(30px);
+
+  animation: blob-bounce 8s infinite ease-in-out;
+
+  pointer-events: none;
+}
+
+@keyframes blob-bounce {
+
+  0%,100% { transform: translate(-50%,-50%) scale(1); }
+
+  25% { transform: translate(-30%,-60%) scale(1.1); }
+
+  50% { transform: translate(-70%,-40%) scale(0.95); }
+
+  75% { transform: translate(-40%,-30%) scale(1.15); }
+}
+
+/* BG */
+
+.bg {
+
+  position: absolute;
+
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+
+  z-index: 2;
+
+  background: rgba(241, 246, 252, 0.84);
+
+  backdrop-filter: blur(18px);
+
+  border-radius: 12px;
+
+  border: 1px solid rgba(103, 134, 173, 0.2);
+}
+
+/* CARD */
+
+.card {
+
+  margin-top: 80px;
+
+  position: relative;
+
+  width: 100%;
+  max-width: 580px;
+
+  min-height: 380px;
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 20px 60px rgba(82, 114, 153, 0.18),
+    inset 0 0 20px rgba(130, 159, 198, 0.08);
+}
+
+/* RESPONSIVE */
+
+@media (max-width:600px) {
+
+  body { padding:20px; }
+
+  form { padding:25px; }
+
+}
+@keyframes blob-bounce {
+    0% {
+        transform: translate(-100%, -100%) translate3d(0, 0, 0);
+      }
+    
+      25% {
+        transform: translate(-100%, -100%) translate3d(100%, 0, 0);
+      }
+    
+      50% {
+        transform: translate(-100%, -100%) translate3d(100%, 70%, 0);
+      }
+    
+      75% {
+        transform: translate(-100%, -100%) translate3d(0, 70%, 0);
+      }
+    
+      100% {
+        transform: translate(-100%, -100%) translate3d(0, 0, 0);
+      }
+  }
+
+/* Navy-blue overrides for light mode login forms */
+body.login-page .card {
+  background: linear-gradient(180deg, #0d1b33 0%, #13233f 100%);
+  border: 1px solid rgba(40, 70, 111, 0.55);
+  box-shadow: 0 15px 40px rgba(9, 18, 38, 0.34), inset 0 0 20px rgba(76, 119, 172, 0.1);
+}
+
+body.login-page .bg {
+  background: transparent;
+  width: 100%;
+}
+
+body.login-page input[type="text"],
+body.login-page input[type="date"],
+body.login-page input[type="password"],
+body.login-page input[type="email"],
+body.login-page input[type="number"],
+body.login-page select {
+  background: #10233f;
+  color: #eaf1fb;
+  border-color: #28466f;
+}
+
+body.login-page input[type="button"] {
+  background: linear-gradient(90deg, #091226 0%, #173d72 50%, #091226 100%);
+  color: #f5f9ff;
+  border: 1px solid rgba(76, 119, 172, 0.6);
+  box-shadow: 0 6px 20px rgba(9, 18, 38, 0.45);
+}
+
+body.login-page input[type="button"]:hover {
+  box-shadow: 0 12px 30px rgba(23, 61, 114, 0.52);
+}

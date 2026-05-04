@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login – FastTrack</title>
+    <link id="test" rel="stylesheet" href="../css/test.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/21.0.0/i18next.min.js"></script>
+    <link rel="stylesheet" href="../css/validationform.css">
+    <link id="select-style" rel="stylesheet" href="../css/select.css">
+    <link id="error-style" rel="stylesheet" href="../css/erroe.css">
+    <link id="form-style" rel="stylesheet" href="../css/form.css">
+    <link id="nav-style" rel="stylesheet" href="../css/img.css">
+    <link rel="stylesheet" href="../css/enhanced.css">
+    <style>
+      /* Keep login card usable in light mode (form2.css clips content). */
+      body.login-page .card {
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      body.login-page .card .bg {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        padding: 18px 22px;
+      }
+
+      body.login-page #checkButton {
+        width: 100%;
+        height: auto;
+        min-height: 44px;
+        margin-top: 10px;
+      }
+    </style>
+</head>
+<body class="french login-page">
+  <div class="select-wrapper">
+    <select id="languageSelect" onchange="changeLanguage(this.value)" class="language-select">
+      <option value="fr">Français</option>
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+    </select>
+  </div>
+  <button id="changeTheme"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+
+  <h3 data-i18n="title_2">transport on tunis</h3>
+  <div class="cont-img">
+    <img src="../assets/logo.png" alt="Logo" class="logo">
+  </div>
+
+  <form class="card" id="loginForm">
+    <div class="bg">
+      <h4 data-i18n="label_username">Email</h4>
+      <input type="email" name="email" id="email" autocomplete="email" required>
+      <div class="error-message" id="error-email"></div>
+
+      <h4 data-i18n="label_password">Password</h4>
+      <div style="position:relative;">
+        <input type="password" name="password" id="pass" autocomplete="current-password"
+               required style="padding-right:40px;">
+        <i class="fa-solid fa-eye" id="togglePassword" style="
+            position:absolute; right:10px; top:50%; transform:translateY(-50%);
+            cursor:pointer; color:#666;"></i>
+      </div>
+      <div class="error-message" id="error-password"></div>
+
+      <!-- General error (wrong credentials, network, rate limit) -->
+      <p id="errorMessage" class="error-message" style="display:none; margin-top:8px;"></p>
+
+      <input type="button" value="Entrée" id="checkButton" data-i18n="[value]submit_btn">
+
+      <p style="text-align:center; margin-top:18px;">
+        <span data-i18n="login_signup_prompt">Don't have an account?</span>
+        <a href="../pages/crcount.html" style="color:gold;" data-i18n="login_signup_link">Sign up here</a>
+      </p>
+    </div>
+    <div class="blob"></div>
+  </form>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/translate.js"></script>
+  <script src="../js/lighdark.js"></script>
+  <script src="../js/img.js"></script>
+  <script>
+    const checkButton  = document.getElementById('checkButton');
+    const emailInput   = document.getElementById('email');
+    const passInput    = document.getElementById('pass');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // ── Password visibility toggle ───────────────────────────────────────────
+    document.getElementById('togglePassword').addEventListener('click', () => {
+      passInput.type = passInput.type === 'password' ? 'text' : 'password';
+      document.getElementById('togglePassword').classList.toggle('fa-eye');
+      document.getElementById('togglePassword').classList.toggle('fa-eye-slash');
+    });
+
+    function showError(msg) {
+      errorMessage.textContent = msg;
+      errorMessage.style.display = 'block';
+    }
+    function clearErrors() {
+      errorMessage.style.display = 'none';
+      errorMessage.textContent = '';
+      document.getElementById('error-email').textContent = '';
+      document.getElementById('error-password').textContent = '';
+    }
+
+    // ── Client-side validation (saves a round-trip for obviously empty fields) ──
+    function validate() {
+      clearErrors();
+      let ok = true;
+      if (!emailInput.value.trim()) {
+        document.getElementById('error-email').textContent = i18next.t('error_email_required');
+        ok = false;
+      }
+      if (!passInput.value) {
+        document.getElementById('error-password').textContent = i18next.t('error_password_required');
+        ok = false;
+      }
+      return ok;
+    }
+
+    // ── Login handler ─────────────────────────────────────────────────────────
+    checkButton.addEventListener('click', async () => {
+      if (!validate()) return;
+
+      checkButton.disabled = true;
+      checkButton.value = 'Logging in…';
+
+      try {
+        await navigationAPI.login(emailInput.value.trim(), passInput.value);
+        // Token stored by api-client.js; redirect to protected home page
+        window.location.href = '../pages/home page.html';
+
+      } catch (err) {
+        if (err.status === 401) {
+          // Wrong credentials — keep message vague for security
+          showError(i18next.t('error_invalid_credentials'));
+        } else if (err.status === 422) {
+          // Server-side format validation
+          showError(i18next.t('error_email_invalid'));
+        } else if (err.status === 429) {
+          showError(i18next.t('error_rate_limit'));
+        } else if (err.isNetworkError) {
+          showError(i18next.t('error_network'));
+        } else {
+          showError(err.message || i18next.t('error_unknown'));
+        }
+      } finally {
+        checkButton.disabled = false;
+        checkButton.value = i18next.t('submit_btn');
+      }
+    });
+
+    // Allow pressing Enter in the password field to submit
+    passInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkButton.click();
+    });
+    emailInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkButton.click();
+    });
+  </script>
+</body>
+</html>

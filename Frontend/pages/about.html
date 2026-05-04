@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About - Smart Transport System</title>
+  <link id="typrot" rel="stylesheet" href="../css/typing rotating.css" />
+  <link id="hp" rel="stylesheet" href="../css/home page.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <link id="homeimg" rel="stylesheet" href="../css/homeimg.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link id="scrole" rel="stylesheet" href="../css/scrole.css">
+  <link id="ii" rel="stylesheet" href="../css/ii.css">
+  <link id="map-style" rel="stylesheet" href="../css/map.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="../css/enhanced.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <img src="../assets/logo.png" alt="Smart Transport Logo" />
+        <span>Smart Transport</span>
+      </div>
+      <nav class="nav-menu">
+        <a href="../pages/about.html" id="nav-about">about</a>
+        <a href="../pages/home page.html#ta1" id="nav-map">Map</a>
+        <a href="../pages/routes.html" id="nav-routes">routes</a>
+        <a href="../pages/reclamation.html" id="nav-complaints">Report Bugs</a>
+        <a href="#footer-bottom" id="nav-contact">contact</a>
+      </nav>
+      <div class="header-icons">
+        <button id="theme-toggle" title="Toggle Light/Dark Mode">
+          <i id="themeIcon" class="fas fa-moon"></i>
+        </button>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+        </select>
+        <div class="user-menu" style="position: relative; display: inline-block;">
+          <button id="userMenuBtn" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer;">
+            <i class="fas fa-user-circle"></i>
+          </button>
+          <div id="userDropdown" style="display: none; position: absolute; right: 0; background: white; border: 1px solid gold; border-radius: 5px; min-width: 150px; z-index: 1000;">
+            <a href="#" id="userProfile" style="display: block; padding: 10px 15px; color: black; text-decoration: none;">Profile</a>
+            <a href="#" id="userLogout" style="display: block; padding: 10px 15px; color: black; text-decoration: none;">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="ta" id="ta">
+    <h1>about the app</h1>
+  </div>
+
+  <div class="slider">
+    <div class="slides" id="slides">
+      <div class="slide">
+        <img src="../assets/why.jpg" alt="Why we created this app">
+        <div class="overlay"></div>
+        <div class="content">
+          <h2 id="slide1Title">Why We Created This App</h2>
+          <p id="slide1Text1">We developed this platform to address the ongoing transportation challenges in our country. Public transit can often be unpredictable, delayed, or confusing, making daily travel stressful for many people.</p>
+          <p id="slide1Text2"><strong>Our goal is to solve these everyday issues</strong> by providing clear, real-time information about buses, trains, and other public transportation options.</p>
+          <p id="slide1Text3">This app is designed for every Tunisian who relies on public transport, helping you plan your journeys efficiently, avoid delays, and stay informed about disruptions or changes in service.</p>
+          <p id="slide1Text4">By using this app, we hope to make commuting easier, safer, and more predictable for everyone.</p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <img src="../assets/transprt.jpg" alt="Route unavailable">
+        <div class="overlay"></div>
+        <div class="content">
+          <h2 id="slide2Title">🚧 Route Unavailable</h2>
+          <p id="slide2Text1">The route <strong>R2</strong> is currently <strong>out of service</strong> due to operational issues.</p>
+          <p id="slide2Text2">⚠️ This route will no longer appear on the route map or timetable until it is restored.</p>
+          <p id="slide2Text3"><strong>Important information for travelers:</strong></p>
+          <ul>
+            <li id="slide2List1">Check for alternative schedules or replacement routes.</li>
+            <li id="slide2List2">Allow extra travel time if you need to go out.</li>
+            <li id="slide2List3">Stay updated via our website or app for real-time information.</li>
+          </ul>
+          <p id="slide2Text4">We apologize for the inconvenience and thank you for your understanding.</p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <img src="../assets/rain2.jpg" alt="Weather alert">
+        <div class="overlay"></div>
+        <div class="content">
+          <h2 id="slide3Title">🌧️ Weather Alert: Heavy Rain</h2>
+          <p id="slide3Text1">Due to heavy rain, some roads are unsafe and impassable. Bus services on these routes cannot operate safely.</p>
+          <p id="slide3Text2"><strong>Impacted bus routes:</strong> R1, R3</p>
+          <p id="slide3Text3"><strong>Important safety advice:</strong></p>
+          <ul>
+            <li id="slide3List1">Do <strong>not attempt to travel on these roads</strong>, even if you need to reach a specific destination.</li>
+            <li id="slide3List2">Use alternative routes or postpone your trip until conditions improve.</li>
+            <li id="slide3List3">Stay informed through our website or app for real-time updates.</li>
+          </ul>
+          <p id="slide3Text4">Your safety is the priority. Please avoid these areas until it is safe to travel.</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="bton prev" onclick="prev()">❮</button>
+    <button class="bton next" onclick="next()">❯</button>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/lighdark2.js"></script>
+  <script src="../js/homeimg.js"></script>
+  <script>
+    async function checkUserStatus() {
+      const token = navigationAPI.getToken();
+      if (!token) {
+        window.location.href = '../pages/login1.html';
+        return;
+      }
+
+      try {
+        const response = await navigationAPI.getMe();
+        if (response.success) {
+          const userBtn = document.getElementById('userMenuBtn');
+          const userName = response.data.name || response.data.email || 'User';
+          const shortName = userName.split(' ')[0].split('@')[0];
+          userBtn.innerHTML = `<i class="fas fa-user-circle"></i> ${shortName}`;
+          userBtn.style.cssText = 'background:none; border:1px solid rgba(212,175,55,.4); border-radius:8px; color:gold; font-size:0.85rem; cursor:pointer; padding:6px 10px; font-family:inherit;';
+        }
+      } catch (error) {
+        navigationAPI.clearToken();
+        window.location.href = '../pages/login1.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkUserStatus();
+    });
+
+    document.getElementById('userMenuBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dropdown = document.getElementById('userDropdown');
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('userLogout').addEventListener('click', (e) => {
+      e.preventDefault();
+      navigationAPI.logout();
+      window.location.href = '../pages/login1.html';
+    });
+  </script>
+</body>
+</html>

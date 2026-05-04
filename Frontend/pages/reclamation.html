@@ -1,0 +1,742 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Report Bugs - FastTrack</title>
+  <link id="typrot" rel="stylesheet" href="../css/typing rotating.css" />
+  <link id="hp" rel="stylesheet" href="../css/home page.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link id="scrole" rel="stylesheet" href="../css/scrole.css">
+  <link id="ii" rel="stylesheet" href="../css/ii.css">
+  <link id="map-style" rel="stylesheet" href="../css/map.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="../css/enhanced.css" />
+  <style>
+    body {
+      min-height: 100vh;
+    }
+
+    .bug-report-wrap {
+      width: min(100%, 920px);
+      margin: 34px auto 48px;
+      background: rgba(20, 20, 20, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.32);
+      border-radius: 14px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+      padding: 22px;
+      text-align: center;
+    }
+
+    .bug-report-title {
+      color: #f5c518;
+      margin: 0 0 8px;
+      font-size: 1.65rem;
+    }
+
+    .bug-report-subtitle {
+      color: #dfd7ca;
+      margin: 0 0 18px;
+      line-height: 1.5;
+    }
+
+    .bug-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .bug-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .bug-field--full {
+      grid-column: 1 / -1;
+    }
+
+    .bug-label {
+      color: #f1eadf;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    .bug-input,
+    .bug-select,
+    .bug-textarea {
+      background: #151515;
+      border: 1px solid rgba(212, 175, 55, 0.24);
+      color: #f1eadf;
+      border-radius: 8px;
+      padding: 10px 11px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .bug-textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .bug-note {
+      margin: 14px 0 0;
+      color: #c5b79d;
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .bug-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .bug-submit {
+      border: 1px solid rgba(212, 175, 55, 0.34);
+      background: rgba(212, 175, 55, 0.12);
+      color: #f5c518;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bug-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .bug-status {
+      display: none;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .bug-status--ok {
+      display: block;
+      background: rgba(91, 215, 91, 0.12);
+      border: 1px solid rgba(91, 215, 91, 0.38);
+      color: #a8efab;
+    }
+
+    .bug-status--error {
+      display: block;
+      background: rgba(235, 87, 87, 0.12);
+      border: 1px solid rgba(235, 87, 87, 0.38);
+      color: #f4b2b2;
+    }
+
+    .bug-textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .bug-note {
+      margin: 14px 0 0;
+      color: #c5b79d;
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .bug-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .bug-submit {
+      border: 1px solid rgba(212, 175, 55, 0.34);
+      background: rgba(212, 175, 55, 0.12);
+      color: #f5c518;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bug-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .bug-status {
+      display: none;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .bug-status--ok {
+      display: block;
+      background: rgba(91, 215, 91, 0.12);
+      border: 1px solid rgba(91, 215, 91, 0.38);
+      color: #a8efab;
+    }
+
+    .bug-status--error {
+      display: block;
+      background: rgba(235, 87, 87, 0.12);
+      border: 1px solid rgba(235, 87, 87, 0.38);
+      color: #f4b2b2;
+    }
+
+    body.light-theme .bug-report-wrap {
+      background: linear-gradient(180deg, #0d1b33 0%, #13233f 100%);
+      border: 1px solid rgba(40, 70, 111, 0.55);
+      box-shadow: 0 15px 40px rgba(9, 18, 38, 0.34), inset 0 0 20px rgba(76, 119, 172, 0.1);
+    }
+
+    body.light-theme .bug-report-title {
+      color: #cdb06a;
+      text-shadow: 0 2px 8px rgba(205, 176, 106, 0.18);
+    }
+
+    body.light-theme .bug-report-subtitle,
+    body.light-theme .bug-note,
+    body.light-theme .bug-label {
+      color: #d7bf84;
+    }
+
+    body.light-theme .bug-report-subtitle {
+      color: #eaf1fb;
+    }
+
+    body.light-theme .bug-input,
+    body.light-theme .bug-select,
+    body.light-theme .bug-textarea {
+      background: #10233f;
+      color: #eaf1fb;
+      border-color: #28466f;
+    }
+
+    body.light-theme .bug-input:focus,
+    body.light-theme .bug-select:focus,
+    body.light-theme .bug-textarea:focus {
+      border-color: #6a7c94;
+      box-shadow: 0 0 12px rgba(106, 124, 148, 0.24);
+      background: #151b24;
+      outline: none;
+    }
+
+    body.light-theme .bug-submit {
+      color: #f5f9ff;
+      background: linear-gradient(90deg, #091226 0%, #173d72 50%, #091226 100%);
+      background-size: 200% 100%;
+      border: 1px solid rgba(76, 119, 172, 0.6);
+      box-shadow: 0 6px 20px rgba(9, 18, 38, 0.45);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+
+    body.light-theme .bug-submit:hover {
+      box-shadow: 0 12px 30px rgba(23, 61, 114, 0.52);
+      transform: translateY(-3px) scale(1.03);
+    }
+
+    body.light-theme {
+      background: linear-gradient(135deg, #dde3ea 0%, #d3dae3 52%, #e2e7ee 100%);
+      color: #2b3544;
+    }
+
+    body.light-theme .main-header {
+      background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+      border-bottom: 1px solid rgba(76, 119, 172, 0.22);
+      box-shadow: 0 8px 24px rgba(30, 45, 66, 0.08);
+    }
+
+    body.light-theme .logo,
+    body.light-theme .nav-menu a,
+    body.light-theme #theme-toggle,
+    body.light-theme #userMenuBtn {
+      color: #1f3558;
+    }
+
+    body.light-theme .nav-menu a:hover,
+    body.light-theme #theme-toggle:hover,
+    body.light-theme #userMenuBtn:hover {
+      color: #173d72;
+    }
+
+    body.light-theme #language-select {
+      background-color: rgba(255, 255, 255, 0.86);
+      border-color: rgba(76, 119, 172, 0.35);
+      color: #1f3558;
+    }
+
+    body.light-theme #language-select:hover {
+      border-color: rgba(23, 61, 114, 0.5);
+    }
+
+    body.light-theme #userDropdown {
+      background: #ffffff;
+      border-color: rgba(76, 119, 172, 0.28);
+      box-shadow: 0 8px 18px rgba(30, 45, 66, 0.14);
+    }
+
+    body.light-theme #userDropdown a {
+      color: #1f3558;
+    }
+
+    body.light-theme #userDropdown a:hover {
+      background-color: rgba(23, 61, 114, 0.08);
+    }
+
+    @media (max-width: 800px) {
+      .bug-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <img src="../assets/logo.png" alt="Smart Transport Logo" />
+        <span>Smart Transport</span>
+      </div>
+      <nav class="nav-menu">
+        <a href="../pages/home page.html">home</a>
+        <a href="../pages/about.html">about</a>
+        <a href="../pages/home page.html#ta1">map</a>
+        <a href="../pages/routes.html">routes</a>
+        <a href="../pages/reclamation.html">report bugs</a>
+      </nav>
+      <div class="header-icons">
+        <button id="theme-toggle" title="Toggle Light/Dark Mode">
+          <i id="themeIcon" class="fas fa-moon"></i>
+        </button>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+        </select>
+        <div class="user-menu">
+          <button id="userMenuBtn">
+            <i class="fas fa-user-circle"></i>
+          </button>
+          <div id="userDropdown">
+            <a href="#" id="userProfile">Profile</a>
+            <a href="#" id="userLogout">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="bug-report-wrap">
+      <h1 class="bug-report-title" id="bug-page-title">Report an App Bug</h1>
+      <p class="bug-report-subtitle" id="bug-page-subtitle">
+        Use this page to report app malfunctions, UI issues, crashes, and incorrect behavior.
+      </p>
+
+      <form id="bugReportForm" novalidate>
+        <div class="bug-grid">
+          <div class="bug-field">
+            <label for="bugCategory" class="bug-label" id="label-bug-category">Bug Category</label>
+            <select id="bugCategory" class="bug-select" required>
+              <option value="" id="opt-bug-cat-placeholder">Choose category</option>
+              <option value="road_closure" id="opt-bug-cat-login">Login / Account</option>
+              <option value="flooding" id="opt-bug-cat-map">Map Display</option>
+              <option value="construction" id="opt-bug-cat-routing">Routing Not Working</option>
+              <option value="accident" id="opt-bug-cat-crash">Crash / Freeze</option>
+              <option value="pothole" id="opt-bug-cat-data">Wrong Data / Result</option>
+              <option value="landslide" id="opt-bug-cat-performance">Performance / Slow Loading</option>
+              <option value="unsafe_area" id="opt-bug-cat-ui">UI / UX Issue</option>
+              <option value="other" id="opt-bug-cat-other">Other Bug</option>
+            </select>
+          </div>
+
+          <div class="bug-field">
+            <label for="bugImpact" class="bug-label" id="label-bug-impact">Impact</label>
+            <select id="bugImpact" class="bug-select" required>
+              <option value="" id="opt-impact-placeholder">Choose impact</option>
+              <option value="low" id="opt-impact-low">Low - Minor issue</option>
+              <option value="medium" id="opt-impact-medium">Medium - Partly broken</option>
+              <option value="high" id="opt-impact-high">High - Important feature blocked</option>
+              <option value="critical" id="opt-impact-critical">Critical - App unusable</option>
+            </select>
+          </div>
+
+          <div class="bug-field bug-field--full">
+            <label for="bugTitle" class="bug-label" id="label-bug-title">Short Title</label>
+            <input id="bugTitle" class="bug-input" maxlength="120" placeholder="Example: Routes page freezes after filter" required />
+          </div>
+
+          <div class="bug-field bug-field--full">
+            <label for="bugSteps" class="bug-label" id="label-bug-steps">Steps to Reproduce</label>
+            <textarea id="bugSteps" class="bug-textarea" maxlength="500" placeholder="1) Open page...&#10;2) Click...&#10;3) Observe..." required></textarea>
+          </div>
+
+          <div class="bug-field bug-field--full">
+            <label for="bugExpected" class="bug-label" id="label-bug-expected">Expected Behavior</label>
+            <textarea id="bugExpected" class="bug-textarea" maxlength="300" placeholder="What should happen?" required></textarea>
+          </div>
+
+          <div class="bug-field bug-field--full">
+            <label for="bugActual" class="bug-label" id="label-bug-actual">Actual Behavior</label>
+            <textarea id="bugActual" class="bug-textarea" maxlength="300" placeholder="What happens instead?" required></textarea>
+          </div>
+
+          <div class="bug-field bug-field--full">
+            <label for="bugExtra" class="bug-label" id="label-bug-extra">Extra Details (optional)</label>
+            <textarea id="bugExtra" class="bug-textarea" maxlength="350" placeholder="Browser, screenshot URL, or any extra context."></textarea>
+          </div>
+        </div>
+
+        <p class="bug-note" id="bug-note-text">
+          This form submits reports through the existing reporting API so your backend keeps working without migrations.
+        </p>
+
+        <div class="bug-actions">
+          <button type="submit" id="submitBugBtn" class="bug-submit">Submit Bug Report</button>
+          <div id="bugStatus" class="bug-status"></div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    if (!navigationAPI.getToken()) {
+      window.location.href = '../pages/login1.html';
+    }
+
+    const form = document.getElementById('bugReportForm');
+    const statusEl = document.getElementById('bugStatus');
+    const submitBtn = document.getElementById('submitBugBtn');
+    const languageSelect = document.getElementById('language-select');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const userLogout = document.getElementById('userLogout');
+
+    const pageTranslations = {
+      en: {
+        navHome: 'home',
+        navAbout: 'about',
+        navMap: 'map',
+        navRoutes: 'routes',
+        navReportBugs: 'report bugs',
+        title: 'Report an App Bug',
+        subtitle: 'Use this page to report app malfunctions, UI issues, crashes, and incorrect behavior.',
+        labelCategory: 'Bug Category',
+        categoryPlaceholder: 'Choose category',
+        categoryLogin: 'Login / Account',
+        categoryMap: 'Map Display',
+        categoryRouting: 'Routing Not Working',
+        categoryCrash: 'Crash / Freeze',
+        categoryData: 'Wrong Data / Result',
+        categoryPerformance: 'Performance / Slow Loading',
+        categoryUi: 'UI / UX Issue',
+        categoryOther: 'Other Bug',
+        labelImpact: 'Impact',
+        impactPlaceholder: 'Choose impact',
+        impactLow: 'Low - Minor issue',
+        impactMedium: 'Medium - Partly broken',
+        impactHigh: 'High - Important feature blocked',
+        impactCritical: 'Critical - App unusable',
+        labelTitle: 'Short Title',
+        labelSteps: 'Steps to Reproduce',
+        labelExpected: 'Expected Behavior',
+        labelActual: 'Actual Behavior',
+        labelExtra: 'Extra Details (optional)',
+        note: 'This form submits reports through the existing reporting API so your backend keeps working without migrations.',
+        submit: 'Submit Bug Report',
+        submitting: 'Submitting...',
+        requiredError: 'Please fill all required fields before submitting.',
+        success: 'Bug report submitted successfully. Thank you.',
+        submitError: 'Could not submit bug report. Please try again.',
+        phTitle: 'Example: Routes page freezes after filter',
+        phSteps: '1) Open page...\n2) Click...\n3) Observe...',
+        phExpected: 'What should happen?',
+        phActual: 'What happens instead?',
+        phExtra: 'Browser, screenshot URL, or any extra context.',
+      },
+      fr: {
+        navHome: 'accueil',
+        navAbout: 'a propos',
+        navMap: 'carte',
+        navRoutes: 'routes',
+        navReportBugs: 'signaler bugs',
+        title: 'Signaler un Bug de l\'Application',
+        subtitle: 'Utilisez cette page pour signaler les dysfonctionnements, problemes UI, plantages et comportements incorrects.',
+        labelCategory: 'Categorie du Bug',
+        categoryPlaceholder: 'Choisir une categorie',
+        categoryLogin: 'Connexion / Compte',
+        categoryMap: 'Affichage de la carte',
+        categoryRouting: 'Routage ne fonctionne pas',
+        categoryCrash: 'Plantage / Blocage',
+        categoryData: 'Donnees incorrectes',
+        categoryPerformance: 'Performance / lenteur',
+        categoryUi: 'Probleme UI / UX',
+        categoryOther: 'Autre bug',
+        labelImpact: 'Impact',
+        impactPlaceholder: 'Choisir un impact',
+        impactLow: 'Faible - probleme mineur',
+        impactMedium: 'Moyen - partiellement casse',
+        impactHigh: 'Eleve - fonctionnalite bloquee',
+        impactCritical: 'Critique - application inutilisable',
+        labelTitle: 'Titre Court',
+        labelSteps: 'Etapes de Reproduction',
+        labelExpected: 'Comportement Attendu',
+        labelActual: 'Comportement Observe',
+        labelExtra: 'Details Supplementaires (optionnel)',
+        note: 'Ce formulaire envoie les rapports via l\'API existante afin de garder la compatibilite backend.',
+        submit: 'Envoyer le Rapport de Bug',
+        submitting: 'Envoi...',
+        requiredError: 'Veuillez remplir tous les champs obligatoires.',
+        success: 'Rapport de bug envoye avec succes. Merci.',
+        submitError: 'Echec de l\'envoi du rapport. Veuillez reessayer.',
+        phTitle: 'Exemple : la page routes se bloque apres un filtre',
+        phSteps: '1) Ouvrir la page...\n2) Cliquer...\n3) Observer...',
+        phExpected: 'Que devrait-il se passer ?',
+        phActual: 'Que se passe-t-il a la place ?',
+        phExtra: 'Navigateur, URL de capture d\'ecran, ou contexte supplementaire.',
+      },
+      ar: {
+        navHome: 'الرئيسية',
+        navAbout: 'حول',
+        navMap: 'الخريطة',
+        navRoutes: 'المسارات',
+        navReportBugs: 'ابلاغ عن اخطاء',
+        title: 'الابلاغ عن خطا في التطبيق',
+        subtitle: 'استخدم هذه الصفحة للابلاغ عن الاعطال، مشاكل الواجهة، التوقف المفاجئ، والسلوك غير الصحيح.',
+        labelCategory: 'فئة الخطا',
+        categoryPlaceholder: 'اختر فئة',
+        categoryLogin: 'تسجيل الدخول / الحساب',
+        categoryMap: 'عرض الخريطة',
+        categoryRouting: 'المسار لا يعمل',
+        categoryCrash: 'توقف / تجمد',
+        categoryData: 'بيانات غير صحيحة',
+        categoryPerformance: 'اداء بطيء',
+        categoryUi: 'مشكلة واجهة المستخدم',
+        categoryOther: 'خطا اخر',
+        labelImpact: 'مستوى التأثير',
+        impactPlaceholder: 'اختر التأثير',
+        impactLow: 'منخفض - مشكلة بسيطة',
+        impactMedium: 'متوسط - جزء معطل',
+        impactHigh: 'مرتفع - ميزة مهمة متوقفة',
+        impactCritical: 'حرج - التطبيق غير قابل للاستخدام',
+        labelTitle: 'عنوان مختصر',
+        labelSteps: 'خطوات اعادة المشكلة',
+        labelExpected: 'السلوك المتوقع',
+        labelActual: 'السلوك الحالي',
+        labelExtra: 'تفاصيل اضافية (اختياري)',
+        note: 'هذا النموذج يرسل البلاغات عبر واجهة API الحالية للحفاظ على التوافق مع الخلفية.',
+        submit: 'ارسال بلاغ الخطا',
+        submitting: 'جار الارسال...',
+        requiredError: 'يرجى تعبئة جميع الحقول المطلوبة قبل الارسال.',
+        success: 'تم ارسال بلاغ الخطا بنجاح. شكرا لك.',
+        submitError: 'تعذر ارسال البلاغ. يرجى المحاولة مرة اخرى.',
+        phTitle: 'مثال: صفحة المسارات تتجمد بعد التصفية',
+        phSteps: '1) افتح الصفحة...\n2) اضغط...\n3) لاحظ النتيجة...',
+        phExpected: 'ما الذي يجب ان يحدث؟',
+        phActual: 'ما الذي يحدث بدلا من ذلك؟',
+        phExtra: 'المتصفح، رابط لقطة شاشة، او اي تفاصيل اضافية.',
+      },
+    };
+
+    let currentLang = localStorage.getItem('fasttrack-language') || 'en';
+
+    function applyLanguage(lang) {
+      const t = pageTranslations[lang] || pageTranslations.en;
+      currentLang = lang;
+      localStorage.setItem('fasttrack-language', lang);
+
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      if (languageSelect) languageSelect.value = lang;
+
+      const navLinks = document.querySelectorAll('.nav-menu a');
+      if (navLinks[0]) navLinks[0].textContent = t.navHome;
+      if (navLinks[1]) navLinks[1].textContent = t.navAbout;
+      if (navLinks[2]) navLinks[2].textContent = t.navMap;
+      if (navLinks[3]) navLinks[3].textContent = t.navRoutes;
+      if (navLinks[4]) navLinks[4].textContent = t.navReportBugs;
+
+      document.getElementById('bug-page-title').textContent = t.title;
+      document.getElementById('bug-page-subtitle').textContent = t.subtitle;
+      document.getElementById('label-bug-category').textContent = t.labelCategory;
+      document.getElementById('opt-bug-cat-placeholder').textContent = t.categoryPlaceholder;
+      document.getElementById('opt-bug-cat-login').textContent = t.categoryLogin;
+      document.getElementById('opt-bug-cat-map').textContent = t.categoryMap;
+      document.getElementById('opt-bug-cat-routing').textContent = t.categoryRouting;
+      document.getElementById('opt-bug-cat-crash').textContent = t.categoryCrash;
+      document.getElementById('opt-bug-cat-data').textContent = t.categoryData;
+      document.getElementById('opt-bug-cat-performance').textContent = t.categoryPerformance;
+      document.getElementById('opt-bug-cat-ui').textContent = t.categoryUi;
+      document.getElementById('opt-bug-cat-other').textContent = t.categoryOther;
+      document.getElementById('label-bug-impact').textContent = t.labelImpact;
+      document.getElementById('opt-impact-placeholder').textContent = t.impactPlaceholder;
+      document.getElementById('opt-impact-low').textContent = t.impactLow;
+      document.getElementById('opt-impact-medium').textContent = t.impactMedium;
+      document.getElementById('opt-impact-high').textContent = t.impactHigh;
+      document.getElementById('opt-impact-critical').textContent = t.impactCritical;
+      document.getElementById('label-bug-title').textContent = t.labelTitle;
+      document.getElementById('label-bug-steps').textContent = t.labelSteps;
+      document.getElementById('label-bug-expected').textContent = t.labelExpected;
+      document.getElementById('label-bug-actual').textContent = t.labelActual;
+      document.getElementById('label-bug-extra').textContent = t.labelExtra;
+      document.getElementById('bug-note-text').textContent = t.note;
+      document.getElementById('submitBugBtn').textContent = t.submit;
+
+      document.getElementById('bugTitle').placeholder = t.phTitle;
+      document.getElementById('bugSteps').placeholder = t.phSteps;
+      document.getElementById('bugExpected').placeholder = t.phExpected;
+      document.getElementById('bugActual').placeholder = t.phActual;
+      document.getElementById('bugExtra').placeholder = t.phExtra;
+    }
+
+    function applyTheme(theme) {
+      const isLight = theme === 'light';
+      document.body.classList.toggle('light-theme', isLight);
+      localStorage.setItem('fasttrack-theme', isLight ? 'light' : 'dark');
+      if (themeIcon) {
+        themeIcon.classList.toggle('fa-moon', !isLight);
+        themeIcon.classList.toggle('fa-sun', isLight);
+      }
+    }
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.className = 'bug-status ' + (isError ? 'bug-status--error' : 'bug-status--ok');
+    }
+
+    function clearStatus() {
+      statusEl.textContent = '';
+      statusEl.className = 'bug-status';
+    }
+
+    function buildDescription() {
+      const title = document.getElementById('bugTitle').value.trim();
+      const steps = document.getElementById('bugSteps').value.trim();
+      const expected = document.getElementById('bugExpected').value.trim();
+      const actual = document.getElementById('bugActual').value.trim();
+      const extra = document.getElementById('bugExtra').value.trim();
+
+      return [
+        `[BUG] ${title}`,
+        '',
+        'Steps to reproduce:',
+        steps,
+        '',
+        'Expected behavior:',
+        expected,
+        '',
+        'Actual behavior:',
+        actual,
+        extra ? `\nExtra details:\n${extra}` : '',
+      ].join('\n').trim().slice(0, 500);
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearStatus();
+
+      const t = pageTranslations[currentLang] || pageTranslations.en;
+
+      const category = document.getElementById('bugCategory').value;
+      const impact = document.getElementById('bugImpact').value;
+      const title = document.getElementById('bugTitle').value.trim();
+      const steps = document.getElementById('bugSteps').value.trim();
+      const expected = document.getElementById('bugExpected').value.trim();
+      const actual = document.getElementById('bugActual').value.trim();
+
+      if (!category || !impact || !title || !steps || !expected || !actual) {
+        setStatus(t.requiredError, true);
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = t.submitting;
+
+      try {
+        const description = buildDescription();
+        await navigationAPI.reportHazard(category, 36.8065, 10.1815, impact, description);
+
+        setStatus(t.success);
+        form.reset();
+      } catch (error) {
+        if (error?.status === 401) {
+          navigationAPI.clearToken();
+          window.location.href = '../pages/login1.html';
+          return;
+        }
+
+        setStatus(error?.message || t.submitError, true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = t.submit;
+       }
+    });
+
+    languageSelect?.addEventListener('change', () => {
+      applyLanguage(languageSelect.value);
+    });
+
+    themeToggleBtn?.addEventListener('click', () => {
+      const nextTheme = document.body.classList.contains('light-theme') ? 'dark' : 'light';
+      applyTheme(nextTheme);
+    });
+
+    userMenuBtn?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (!userDropdown) return;
+      userDropdown.style.display = userDropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.addEventListener('click', () => {
+      if (userDropdown) userDropdown.style.display = 'none';
+    });
+
+    userLogout?.addEventListener('click', (event) => {
+      event.preventDefault();
+      navigationAPI.logout();
+      window.location.href = '../pages/login1.html';
+    });
+
+    async function checkUserStatus() {
+      try {
+        const response = await navigationAPI.getMe();
+        if (response.success && userMenuBtn) {
+          const userName = response.data.name || response.data.email || 'User';
+          const shortName = userName.split(' ')[0].split('@')[0];
+          userMenuBtn.innerHTML = `<i class="fas fa-user-circle"></i> ${shortName}`;
+          userMenuBtn.style.cssText = 'background:none; border:1px solid rgba(212,175,55,.4); border-radius:8px; color:gold; font-size:0.85rem; cursor:pointer; padding:6px 10px; font-family:inherit;';
+        }
+      } catch (_) {
+        navigationAPI.clearToken();
+        window.location.href = '../pages/login1.html';
+      }
+    }
+
+    applyLanguage(currentLang);
+    applyTheme(localStorage.getItem('fasttrack-theme') || 'dark');
+    checkUserStatus();
+   </script>
+ </body>
+ </html>

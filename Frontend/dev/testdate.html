@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .date-wrapper {
+  width: 300px;
+}
+
+/* input */
+#datePicker {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 2px solid gold;
+  background-color: #000;
+  color: #FFD700;
+  outline: none;
+  font-size: 14px;
+}
+
+/* calendrier */
+.flatpickr-calendar {
+  background: #000;
+  border-radius: 12px;
+  border: 2px solid gold;
+  color: #FFD700;
+}
+
+/* jours */
+.flatpickr-day {
+  color: #FFD700;
+}
+
+.flatpickr-day:hover {
+  background: #333;
+}
+
+/* jour sélectionné */
+.flatpickr-day.selected {
+  background: gold;
+  color: black;
+}
+
+/* header */
+.flatpickr-months {
+  color: #FFD700;
+}
+
+/* jours des autres mois */
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+  color: #FFD700 !important;
+  opacity: 0.4; /* rend visible mais discret */
+}
+
+/* hover dessus */
+.flatpickr-day.prevMonthDay:hover,
+.flatpickr-day.nextMonthDay:hover {
+  opacity: 1;
+  background: #333;
+}
+
+/* mois + année */
+.flatpickr-current-month {
+  color: #FFD700 !important;
+}
+
+/* input mois/année */
+.flatpickr-current-month input.cur-year {
+  color: #FFD700 !important;
+}
+
+/* flèches */
+.flatpickr-prev-month,
+.flatpickr-next-month {
+  fill: #FFD700 !important;
+}
+
+.flatpickr-prev-month:hover,
+.flatpickr-next-month:hover {
+  fill: #FFFF00 !important;
+}
+
+
+
+/* année (input) */
+.flatpickr-current-month input.cur-year {
+  color: #FFD700 !important;
+  background: transparent;
+  border: none;
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* quand focus */
+.flatpickr-current-month input.cur-year:focus {
+  outline: none;
+  border-bottom: 1px solid gold;
+}
+    </style>
+
+</head>
+<body>
+    <div class="date-wrapper">
+  <input type="text" id="datePicker" placeholder="Choisir une date">
+</div>
+   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> 
+   <script>
+    flatpickr("#datePicker", {
+  dateFormat: "d/m/Y",
+
+  onReady: function(selectedDates, dateStr, instance) {
+    const yearInput = instance.currentYearElement;
+
+    yearInput.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      let year = parseInt(yearInput.value);
+
+      if (e.deltaY < 0) {
+        year++;
+      } else {
+        year--;
+      }
+
+      instance.changeYear(year);
+    });
+  }
+});
+   </script>
+</body>
+</html>

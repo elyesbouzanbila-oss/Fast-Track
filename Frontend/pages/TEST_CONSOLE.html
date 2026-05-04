@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integration Test Console</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #2d2d2d;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .card h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 0.85em;
+      color: #999;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .output {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 0.8em;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 5px;
+      border-left: 3px solid #667eea;
+      padding-left: 10px;
+    }
+
+    .log-success {
+      color: #4caf50;
+      border-left-color: #4caf50;
+    }
+
+    .log-error {
+      color: #f44336;
+      border-left-color: #f44336;
+    }
+
+    .log-info {
+      color: #2196f3;
+      border-left-color: #2196f3;
+    }
+
+    .log-warning {
+      color: #ff9800;
+      border-left-color: #ff9800;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .status.running {
+      background: #1e3a5f;
+      border: 1px solid #2196f3;
+      color: #2196f3;
+    }
+
+    .status.success {
+      background: #1b5e20;
+      border: 1px solid #4caf50;
+      color: #4caf50;
+    }
+
+    .status.error {
+      background: #5f1c1c;
+      border: 1px solid #f44336;
+      color: #f44336;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    input {
+      flex: 1;
+      padding: 8px 12px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #667eea;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75em;
+      margin-right: 5px;
+    }
+
+    .badge.success {
+      background: #4caf50;
+    }
+
+    .badge.error {
+      background: #f44336;
+    }
+
+    code {
+      background: #1a1a1a;
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #4caf50;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .summary-item {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+      border: 1px solid #444;
+    }
+
+    .summary-item strong {
+      display: block;
+      font-size: 1.8em;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .summary-item span {
+      font-size: 0.85em;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🧪 Frontend-Backend Integration Test Console</h1>
+    <p class="subtitle">Real-time API testing for FastTrack Navigation System</p>
+  </header>
+
+  <div class="container">
+    <!-- All Tests -->
+    <div class="card">
+      <h3>🚀 Full Test Suite</h3>
+      <p>Run complete integration test with 9 test cases. Creates new user, tests auth, routes, hazards, and more.</p>
+      <button onclick="runFullTest()">Run All Tests</button>
+      <div id="fullTestOutput" class="output"></div>
+      <div id="fullTestStatus" class="status"></div>
+    </div>
+
+    <!-- Quick Test -->
+    <div class="card">
+      <h3>⚡ Quick Test</h3>
+      <p>Login and retrieve user info. Good for quick verification.</p>
+      <div class="input-group">
+        <input type="email" id="quickEmail" placeholder="Email" value="test@example.com">
+        <input type="password" id="quickPassword" placeholder="Password" value="TestPass123!">
+      </div>
+      <button onclick="runQuickTest()">Quick Test</button>
+      <div id="quickTestOutput" class="output"></div>
+    </div>
+
+    <!-- Auth Tests -->
+    <div class="card">
+      <h3>🔐 Authentication Tests</h3>
+      <p>Test signup, login, logout, and user info endpoints.</p>
+      <div class="button-group">
+        <button onclick="testSignupOnly()">Sign Up</button>
+        <button onclick="testLoginOnly()">Login</button>
+        <button onclick="testGetMeOnly()">Get User</button>
+        <button onclick="testLogoutOnly()">Logout</button>
+      </div>
+      <div id="authOutput" class="output"></div>
+    </div>
+
+    <!-- Route Tests -->
+    <div class="card">
+      <h3>🗺️ Route Tests</h3>
+      <p>Test route calculation, point snapping, and transit stops.</p>
+      <div class="button-group">
+        <button onclick="testRouteOnly()">Calculate Route</button>
+        <button onclick="testSnapOnly()">Snap Point</button>
+        <button onclick="testStopsOnly()">Transit Stops</button>
+      </div>
+      <div id="routeOutput" class="output"></div>
+    </div>
+
+    <!-- Hazard Tests -->
+    <div class="card">
+      <h3>⚠️ Hazard Tests</h3>
+      <p>Test hazard reporting and retrieval.</p>
+      <div class="button-group">
+        <button onclick="testReportOnly()">Report Hazard</button>
+        <button onclick="testGetHazardsOnly()">Get Hazards</button>
+      </div>
+      <div id="hazardOutput" class="output"></div>
+    </div>
+
+    <!-- Test Results Summary -->
+    <div class="card full-width">
+      <h3>📊 Test Results Summary</h3>
+      <div id="testSummary">
+        <p style="color: #999; text-align: center;">Run tests to see results</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="card full-width">
+    <h3>📖 Instructions</h3>
+    <p>
+      <strong>Backend Requirements:</strong><br>
+      Make sure these are running:
+    </p>
+    <code>docker compose up</code>
+    <br><br>
+    <p>
+      <strong>API Base URL:</strong> <code>http://localhost:3000</code><br>
+      <strong>Frontend Base URL:</strong> <code>http://localhost:3001</code>
+    </p>
+    <p style="margin-top: 15px; color: #999;">
+      <strong>Test Features:</strong><br>
+      ✓ Full integration test (signup → login → routes → hazards → logout)<br>
+      ✓ Individual endpoint tests<br>
+      ✓ Error handling verification<br>
+      ✓ Real-time console output<br>
+      ✓ Test summary statistics
+    </p>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/INTEGRATION_TEST.js"></script>
+
+  <script>
+    // Logging utility
+    const testOutputs = {};
+
+    function log(outputId, type, message) {
+      if (!testOutputs[outputId]) {
+        testOutputs[outputId] = [];
+      }
+      testOutputs[outputId].push({ type, message, time: new Date().toLocaleTimeString() });
+      
+      const element = document.getElementById(outputId);
+      if (element) {
+        const entry = document.createElement('div');
+        entry.className = `log-entry log-${type}`;
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        element.appendChild(entry);
+        element.scrollTop = element.scrollHeight;
+      }
+    }
+
+    function clearOutput(outputId) {
+      const element = document.getElementById(outputId);
+      if (element) {
+        element.innerHTML = '';
+      }
+      testOutputs[outputId] = [];
+    }
+
+    function setStatus(statusId, status, message) {
+      const element = document.getElementById(statusId);
+      if (element) {
+        element.className = `status ${status}`;
+        element.innerHTML = message;
+      }
+    }
+
+    async function runFullTest() {
+      clearOutput('fullTestOutput');
+      setStatus('fullTestStatus', 'running', '⏳ Running all tests...');
+      
+      const results = await runAllTests();
+      
+      let passed = Object.values(results).filter(r => r.status === 'PASSED').length;
+      let failed = Object.values(results).filter(r => r.status !== 'PASSED').length;
+      
+      setStatus('fullTestStatus', passed === Object.keys(results).length ? 'success' : 'error', 
+        `<strong>Results:</strong> ${passed}/${Object.keys(results).length} passed`);
+      
+      updateSummary(results);
+    }
+
+    async function runQuickTest() {
+      clearOutput('quickTestOutput');
+      const email = document.getElementById('quickEmail').value;
+      const password = document.getElementById('quickPassword').value;
+      
+      if (!email || !password) {
+        log('quickTestOutput', 'error', 'Please enter email and password');
+        return;
+      }
+      
+      try {
+        log('quickTestOutput', 'info', `Logging in as ${email}...`);
+        const loginRes = await navigationAPI.login(email, password);
+        
+        if (loginRes.success) {
+          log('quickTestOutput', 'success', 'Login successful');
+          
+          log('quickTestOutput', 'info', 'Fetching user info...');
+          const meRes = await navigationAPI.getMe();
+          
+          if (meRes.success) {
+            log('quickTestOutput', 'success', `User: ${meRes.data.name} (${meRes.data.email})`);
+          } else {
+            log('quickTestOutput', 'error', meRes.error);
+          }
+        } else {
+          log('quickTestOutput', 'error', loginRes.error);
+        }
+      } catch (error) {
+        log('quickTestOutput', 'error', error.message);
+      }
+    }
+
+    async function testSignupOnly() {
+      clearOutput('authOutput');
+      const result = await testSignup();
+      log('authOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testLoginOnly() {
+      clearOutput('authOutput');
+      const email = prompt('Enter email:');
+      const password = prompt('Enter password:');
+      if (!email || !password) return;
+      
+      const result = await testLogin(email, password);
+      log('authOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testGetMeOnly() {
+      clearOutput('authOutput');
+      const result = await testGetMe();
+      log('authOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testLogoutOnly() {
+      clearOutput('authOutput');
+      const result = await testLogout();
+      log('authOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testRouteOnly() {
+      clearOutput('routeOutput');
+      const result = await testCalculateRoute();
+      log('routeOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testSnapOnly() {
+      clearOutput('routeOutput');
+      const result = await testSnapPoint();
+      log('routeOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testStopsOnly() {
+      clearOutput('routeOutput');
+      const result = await testNearbyStops();
+      log('routeOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testReportOnly() {
+      clearOutput('hazardOutput');
+      const result = await testReportHazard();
+      log('hazardOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    async function testGetHazardsOnly() {
+      clearOutput('hazardOutput');
+      const result = await testGetHazards();
+      log('hazardOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
+    }
+
+    function updateSummary(results) {
+      const passed = Object.values(results).filter(r => r.status === 'PASSED').length;
+      const failed = Object.values(results).filter(r => r.status !== 'PASSED').length;
+      
+      const html = `
+        <div class="summary">
+          <div class="summary-item">
+            <strong>${passed}</strong>
+            <span>Tests Passed</span>
+          </div>
+          <div class="summary-item">
+            <strong>${failed}</strong>
+            <span>Tests Failed</span>
+          </div>
+          <div class="summary-item">
+            <strong>${Math.round(passed / (passed + failed) * 100)}%</strong>
+            <span>Success Rate</span>
+          </div>
+        </div>
+        <div style="margin-top: 20px;">
+          ${Object.entries(results).map(([test, result]) => `
+            <div class="log-entry log-${result.status === 'PASSED' ? 'success' : 'error'}">
+              <strong>${test}:</strong> ${result.status} ${result.error ? '- ' + result.error : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('testSummary').innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>

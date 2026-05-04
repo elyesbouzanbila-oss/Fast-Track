@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transport Map</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+  /* Page-level layout — map.html only */
+  body {
+    background: #0a0a0a;
+    color: #e8e0d9;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0 0 40px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #d4af37, #f5c518, #d4af37);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 28px 0 8px;
+  }
+  #map {
+    height: 520px;
+    margin: 0 20px;
+    border-radius: 14px;
+  }
+  #routeInfo { margin-top: 16px; text-align: center; }
+  #hazardsList {
+    margin: 16px auto 0;
+    max-width: 660px;
+    padding: 0 20px;
+    text-align: left;
+  }
+  #hazardsList h3 {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    color: #e05c5c;
+    letter-spacing: 1px;
+    background: none;
+    -webkit-text-fill-color: #e05c5c;
+  }
+  .hazard-item {
+    padding: 10px 14px;
+    margin: 6px 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+</style>
+    <link rel="stylesheet" href="../css/enhanced.css">
+</head>
+
+<body>
+
+<h1>🚍 Transport Route Finder</h1>
+
+<div style="padding:12px 20px 0; text-align:left;">
+  <a href="../pages/home page.html" style="color:rgba(212,175,55,0.7); font-size:0.82rem; text-decoration:none; letter-spacing:1px;">
+    ← Back to Home
+  </a>
+</div>
+<div id="controls">
+  <select id="from"></select>
+  <select id="to"></select>
+  <select id="mode">
+    <option value="car">🚗 Car</option>
+    <option value="foot">🚶 Walking</option>
+    <option value="multimodal">🚌 Walk + Transit</option>
+  </select>
+  <button id="routeBtn" onclick="getRoute()">Afficher Route</button>
+</div>
+
+<div id="statusMsg"></div>
+<div id="errorMsg" style="display:none;"></div>
+
+<div id="map"></div>
+<div id="routeInfo"></div>
+<div id="hazardsList"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/api-client.js"></script>
+<script src="../js/bus-stops-layer.js"></script>
+<script src="../js/metro-stations.js"></script>
+
+<script>
+// 🗺️ Map initialization
+const map = L.map('map').setView([36.8065, 10.1815], 7);
+
+// 🌙 Dark map
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &amp; CartoDB'
+}).addTo(map);
+
+// Bus stop layer — toggle button appears top-right of map
+initBusStopLayer(map);
+
+// 📍 Stations
+const BASE_STATIONS = [
+  { name: "Tunis",   lat: 36.8065, lng: 10.1815 },
+  { name: "Sousse",  lat: 35.8256, lng: 10.6369 },
+  { name: "Sfax",    lat: 34.7406, lng: 10.7603 },
+  { name: "Bizerte", lat: 37.2744, lng: 9.8739  },
+  { name: "Nabeul",  lat: 36.4561, lng: 10.7376 },
+  { name: "Kairouan",lat: 35.6781, lng: 10.0963 },
+];
+
+const stations = [...BASE_STATIONS, ...(window.METRO_STATIONS || [])];
+
+function stationLabel(station) {
+  return station.nameAr ? `${station.name} / ${station.nameAr}` : station.name;
+}
+
+// 🎨 Yellow icon
+const goldIcon = L.icon({
+  iconUrl: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+  iconSize: [32, 32]
+});
+
+// 🔴 Red icon for hazards
+const hazardIcon = L.icon({
+  iconUrl: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+  iconSize: [32, 32]
+});
+
+// 📌 Add stations to map
+stations.forEach(station => {
+  L.marker([station.lat, station.lng], { icon: goldIcon })
+    .addTo(map)
+    .bindPopup(stationLabel(station));
+});
+
+// 📋 Fill dropdowns
+const fromSelect = document.getElementById('from');
+const toSelect   = document.getElementById('to');
+
+stations.forEach((station, index) => {
+  const label = stationLabel(station);
+  fromSelect.innerHTML += `<option value="${index}">${label}</option>`;
+  toSelect.innerHTML   += `<option value="${index}">${label}</option>`;
+});
+
+// Default to-destination different from origin so the guard below
+// doesn't block on first load.
+toSelect.selectedIndex = 1;
+
+let routeLayer    = null;
+let hazardMarkers = [];
+
+function setStatus(msg)  { document.getElementById('statusMsg').textContent = msg; }
+function clearError()    { const el = document.getElementById('errorMsg'); el.style.display = 'none'; el.textContent = ''; }
+function showError(msg)  { const el = document.getElementById('errorMsg'); el.textContent = msg; el.style.display = 'block'; }
+
+// 🚍 Calculate route via API
+async function getRoute() {
+  clearError();
+
+  const fromIdx = parseInt(fromSelect.value);
+  const toIdx   = parseInt(toSelect.value);
+
+  // FIX: Guard against same-station routing which produces a useless/erroring request
+  if (fromIdx === toIdx) {
+    showError('Please select different origin and destination stations.');
+    return;
+  }
+
+  const start = stations[fromIdx];
+  const end   = stations[toIdx];
+  const mode  = document.getElementById('mode').value;
+
+  // Clear previous layers
+  if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+  hazardMarkers.forEach(m => map.removeLayer(m));
+  hazardMarkers = [];
+  document.getElementById('routeInfo').innerHTML   = '';
+  document.getElementById('hazardsList').innerHTML = '';
+
+  const btn = document.getElementById('routeBtn');
+  btn.disabled = true;
+  setStatus('Calculating route…');
+
+  try {
+    const response = await navigationAPI.calculateRoute(
+      { lat: start.lat, lng: start.lng },
+      { lat: end.lat,   lng: end.lng   },
+      mode
+    );
+
+    if (!response.success) {
+      throw new Error(response.error || 'Route calculation failed');
+    }
+
+    const routeData = response.data.route;
+    const geometry  = routeData.geometry;
+    const distance  = routeData.distance;
+    const duration  = routeData.duration;
+
+    // Display route on map
+    routeLayer = L.geoJSON(geometry, {
+      style: { color: 'gold', weight: 5 }
+    }).addTo(map);
+    map.fitBounds(routeLayer.getBounds());
+
+    const isDemo = routeData.demo === true;
+    setStatus(isDemo ? '⚠️ Showing estimated route (OSRM offline)' : '');
+
+    // Route info
+    document.getElementById('routeInfo').innerHTML =
+      `<p>Distance: ${(distance / 1000).toFixed(2)} km | ` +
+      `Duration: ${Math.round(duration / 60)} min` +
+      (isDemo ? ' <em>(estimated)</em>' : '') +
+      `</p>` +
+      (isDemo ? '<div class="demo-banner">🗺️ Route is approximate — real OSRM data unavailable.</div>' : '');
+
+    // FIX: null-check before accessing .hazards.hazards to prevent TypeError
+    // when hazard checking is unavailable (e.g. PostGIS not running).
+    const hazardInfo = response.data.hazards;
+    if (hazardInfo?.hazards?.length > 0) {
+      let hazardsHtml = '<h3>⚠️ Hazards Detected:</h3>';
+
+      hazardInfo.hazards.forEach(hazard => {
+        // FIX: hazard coordinates come from PostGIS as lng/lat — verify field names
+        const hLat = hazard.lat ?? hazard.latitude;
+        const hLng = hazard.lng ?? hazard.longitude;
+
+        if (hLat != null && hLng != null) {
+          const marker = L.marker([hLat, hLng], { icon: hazardIcon })
+            .addTo(map)
+            .bindPopup(`<strong>${hazard.type}</strong><br>Severity: ${hazard.severity}`);
+          hazardMarkers.push(marker);
+        }
+
+        const distStr = hazard.distance_to_route != null
+          ? `${Number(hazard.distance_to_route).toFixed(1)}m from route`
+          : '';
+
+        hazardsHtml += `
+          <div class="hazard-item">
+            <strong>${hazard.type}</strong> (${hazard.severity})
+            ${distStr ? `<br><small>${distStr}</small>` : ''}
+            ${hazard.description ? `<br>${hazard.description}` : ''}
+          </div>`;
+      });
+
+      // FIX: set innerHTML on the existing element — do NOT wrap in another
+      // <div id="hazardsList"> which would create duplicate IDs in the DOM.
+      document.getElementById('hazardsList').innerHTML = hazardsHtml;
+    }
+
+  } catch (error) {
+    setStatus('');
+    let msg = error.message || 'Unknown error';
+    // Friendly message for transit/multimodal with no GTFS data
+    if (msg.includes('No transit stops') || msg.includes('No transit connections')) {
+      msg = 'No transit data available for this route. Try Car or Walking mode instead.';
+    } else if (error.code === 'LOCATION_UNREACHABLE') {
+      msg = 'One of the selected locations is not accessible by road.';
+    } else if (error.code === 'NO_ROUTE_FOUND') {
+      msg = 'No route found between these points.';
+    }
+    showError(msg);
+    console.error('[getRoute]', error);
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>

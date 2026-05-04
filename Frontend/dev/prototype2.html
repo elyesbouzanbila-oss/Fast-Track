@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Transport System</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f8;
+}
+
+/* HEADER */
+header {
+    background: #1e2a38;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header nav a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+/* HERO */
+.hero {
+    background: linear-gradient(120deg, #2b5876, #4e4376);
+    color: white;
+    padding: 40px;
+    text-align: center;
+}
+
+.search-box input, .search-box select {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 20px;
+    background: #00c2ff;
+    color: white;
+    cursor: pointer;
+}
+
+/* SECTIONS */
+section {
+    padding: 20px;
+    margin: 10px;
+    background: white;
+    border-radius: 10px;
+}
+
+.map {
+    height: 150px;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ROUTE CARDS */
+.route {
+    padding: 10px;
+    margin: 10px 0;
+    border-left: 5px solid green;
+    background: #f9f9f9;
+}
+
+.route.down {
+    border-left: 5px solid red;
+}
+
+/* ALERT */
+.alert {
+    background: #ffe0e0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* FOOTER */
+footer {
+    background: #1e2a38;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+
+
+.routes-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.route {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #f9f9f9;
+    border-left: 6px solid green;
+}
+
+.route.down {
+    border-left: 6px solid red;
+    opacity: 0.7;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div><b>Smart Transport</b></div>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Routes</a>
+        <a href="#">Map</a>
+        <a href="#">Weather</a>
+    </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Smart Transport System</h1>
+    <p>Routes that adapt to weather conditions in real time</p>
+
+    <div class="search-box">
+        <input type="text" placeholder="From station">
+        <input type="text" placeholder="To station">
+
+        <select>
+            <option>Bus</option>
+            <option>Metro</option>
+            <option>Train</option>
+        </select>
+
+        <button onclick="searchRoute()">Search Route</button>
+    </div>
+
+    <h3 id="weather">Weather: Heavy Rain 🌧️ | Status: WARNING 🟡</h3>
+</div>
+
+<!-- MAP -->
+<section>
+    <h2>Live Map</h2>
+    <div class="map">Map Placeholder (Routes Visualization)</div>
+</section>
+
+<!-- ROUTES -->
+<section>
+    <h2>Available Routes</h2>
+
+    <div class="routes-container">
+
+        <div class="route up">
+            <h3>Station A → Station B</h3>
+            <p>Cost: 2€ | Transport: Bus 🚌</p>
+            <p>Status: 🟢 UP</p>
+        </div>
+
+        <div class="route up">
+            <h3>Station C → Station D</h3>
+            <p>Cost: 3€ | Transport: Metro 🚇</p>
+            <p>Status: 🟢 UP</p>
+        </div>
+
+        <div class="route down">
+            <h3>Station E → Station F</h3>
+            <p>Cost: 4€ | Transport: Train 🚆</p>
+            <p>Status: 🔴 DOWN (Weather)</p>
+        </div>
+
+        <div class="route up">
+            <h3>Station G → Station H</h3>
+            <p>Cost: 2.5€ | Transport: Bus 🚌</p>
+            <p>Status: 🟢 UP</p>
+        </div>
+
+    </div>
+</section>
+
+<!-- ALERTS -->
+<section>
+    <h2>Live Alerts</h2>
+    <div class="alert">
+        🚨 Route C-D is DOWN due to Heavy Rain
+    </div>
+</section>
+
+<!-- COMPLAINT -->
+<section>
+    <h2>Complaint</h2>
+    <input type="text" placeholder="Route name"><br><br>
+    <textarea placeholder="Describe your issue"></textarea><br><br>
+    <button>Submit</button>
+</section>
+
+<footer>
+    Smart Transport System © 2026
+</footer>
+
+<script>
+function searchRoute() {
+    alert("Searching route based on weather conditions...");
+}
+</script>
+
+</body>
+</html>

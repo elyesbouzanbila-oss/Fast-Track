@@ -1,0 +1,77 @@
+/* Effet blob – or/jaune glow luxury */
+.blob {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #f5c51888, #d4af3744, transparent 70%);
+  opacity: 0.6;
+  filter: blur(28px);
+  animation: blob-bounce 8s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes blob-bounce {
+  0%, 100%   { transform: translate(-50%, -50%) scale(1); }
+  25%        { transform: translate(-30%, -60%) scale(1.1); }
+  50%        { transform: translate(-70%, -40%) scale(0.95); }
+  75%        { transform: translate(-40%, -30%) scale(1.15); }
+}
+
+/* .bg – fond verre fumé */
+.bg {
+  position: relative;
+  background: transparent;
+  overflow: visible;
+  border-radius: 12px;
+  border: none;
+  z-index: 2;
+}
+
+/* Card globale */
+.card {
+  margin-top: 80px;
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  height: auto;
+  border-radius: 20px;
+  overflow: visible;
+  background: rgba(20, 20, 20, 0.92);
+  backdrop-filter: blur(16px);
+  padding: 35px 40px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6),
+              inset 0 0 20px rgba(212, 175, 55, 0.08);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  body { padding: 20px; }
+  form { padding: 25px; }
+}
+
+@keyframes blob-bounce {
+    0% {
+        transform: translate(-100%, -100%) translate3d(0, 0, 0);
+      }
+    
+      25% {
+        transform: translate(-100%, -100%) translate3d(100%, 0, 0);
+      }
+    
+      50% {
+        transform: translate(-100%, -100%) translate3d(100%, 70%, 0);
+      }
+    
+      75% {
+        transform: translate(-100%, -100%) translate3d(0, 70%, 0);
+      }
+    
+      100% {
+        transform: translate(-100%, -100%) translate3d(0, 0, 0);
+      }
+  }
