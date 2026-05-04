@@ -91,6 +91,7 @@
 <script src="../js/config.js"></script>
 <script src="../js/api-client.js"></script>
 <script src="../js/bus-stops-layer.js"></script>
+<script src="../js/metro-stations.js"></script>
 
 <script>
 // 🗺️ Map initialization
@@ -105,7 +106,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 initBusStopLayer(map);
 
 // 📍 Stations
-const stations = [
+const BASE_STATIONS = [
   { name: "Tunis",   lat: 36.8065, lng: 10.1815 },
   { name: "Sousse",  lat: 35.8256, lng: 10.6369 },
   { name: "Sfax",    lat: 34.7406, lng: 10.7603 },
@@ -113,6 +114,12 @@ const stations = [
   { name: "Nabeul",  lat: 36.4561, lng: 10.7376 },
   { name: "Kairouan",lat: 35.6781, lng: 10.0963 },
 ];
+
+const stations = [...BASE_STATIONS, ...(window.METRO_STATIONS || [])];
+
+function stationLabel(station) {
+  return station.nameAr ? `${station.name} / ${station.nameAr}` : station.name;
+}
 
 // 🎨 Yellow icon
 const goldIcon = L.icon({
@@ -130,7 +137,7 @@ const hazardIcon = L.icon({
 stations.forEach(station => {
   L.marker([station.lat, station.lng], { icon: goldIcon })
     .addTo(map)
-    .bindPopup(station.name);
+    .bindPopup(stationLabel(station));
 });
 
 // 📋 Fill dropdowns
@@ -138,8 +145,9 @@ const fromSelect = document.getElementById('from');
 const toSelect   = document.getElementById('to');
 
 stations.forEach((station, index) => {
-  fromSelect.innerHTML += `<option value="${index}">${station.name}</option>`;
-  toSelect.innerHTML   += `<option value="${index}">${station.name}</option>`;
+  const label = stationLabel(station);
+  fromSelect.innerHTML += `<option value="${index}">${label}</option>`;
+  toSelect.innerHTML   += `<option value="${index}">${label}</option>`;
 });
 
 // Default to-destination different from origin so the guard below

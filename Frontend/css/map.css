@@ -24,6 +24,81 @@ select, button {
   border-radius: 10px;
 }
 
+.metro-station-marker {
+  background: transparent;
+  border: none;
+}
+
+.metro-station-marker__pin {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(180deg, #5cf0ff 0%, #0ea5e9 100%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 18px rgba(14, 165, 233, 0.45);
+  color: #07131f;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 24px;
+  text-align: center;
+}
+
+.metro-station-marker__pin span {
+  display: inline-block;
+  transform: rotate(45deg);
+}
+
+.metro-station-marker__pin::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  border: 1px solid rgba(7, 19, 31, 0.18);
+}
+
+.metro-station-marker__pin > * {
+  transform: rotate(45deg);
+}
+
+.metro-station-tooltip {
+  background: rgba(7, 19, 31, 0.92);
+  color: #f8fbff;
+  border: 1px solid rgba(92, 240, 255, 0.55);
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+}
+
+.metro-station-tooltip.leaflet-tooltip-top::before {
+  border-top-color: rgba(7, 19, 31, 0.92);
+}
+
+.metro-names-toggle {
+  padding: 7px 13px;
+  background: rgba(18, 18, 18, 0.92);
+  color: #e8e0d9;
+  border: 1.5px solid rgba(92, 240, 255, 0.35);
+  border-radius: 8px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  transition: border-color .22s, background .22s, color .22s;
+  white-space: nowrap;
+}
+
+.metro-names-toggle:hover {
+  border-color: #5cf0ff;
+  background: rgba(26, 26, 26, 0.96);
+}
+
 .map-layout {
   display: flex;
   align-items: stretch;

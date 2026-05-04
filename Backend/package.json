@@ -16,7 +16,9 @@
     "import:stops:dry": "node scripts/import-osm-stops.js --dry-run",
     "import:gtfs": "node scripts/import-gtfs.js",
     "import:csv-stops": "node scripts/import-csv-stops.js",
-    "import:csv-stops:dry": "node scripts/import-csv-stops.js --dry-run"
+    "import:csv-stops:dry": "node scripts/import-csv-stops.js --dry-run",
+    "import:metro-stations": "node scripts/import-csv-stops.js data/metro_stations.csv --location-type=1",
+    "import:metro-stations:dry": "node scripts/import-csv-stops.js data/metro_stations.csv --dry-run --location-type=1"
   },
   "dependencies": {
     "express": "^4.18.2",

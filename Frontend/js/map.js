@@ -6,7 +6,7 @@
  * distance/duration inline instead of relying on alert() or console.log.
  */
 
-const MAP_STATIONS = [
+const BASE_STATIONS = [
   // Major Cities
   { name: 'Tunis',       lat: 36.8065, lng: 10.1815 },
   { name: 'Sousse',      lat: 35.8256, lng: 10.6369 },
@@ -80,6 +80,10 @@ const MAP_STATIONS = [
   { name: 'Remada',      lat: 32.3250, lng: 10.3920 },
   { name: 'Bir Lahmar',  lat: 33.0900, lng: 10.3810 },
 ];
+
+const METRO_STATIONS = Array.isArray(window.METRO_STATIONS) ? window.METRO_STATIONS : [];
+const MAP_STATIONS = [...BASE_STATIONS, ...METRO_STATIONS];
+const METRO_STATION_NAMES = new Set(METRO_STATIONS.map((station) => station.name));
 
 let homeMap        = null;
 let homeRouteLayer = null;
@@ -328,6 +332,11 @@ function updateStationMarkerVisibility() {
     marker.setOpacity(shouldShow ? 1 : 0);
     marker.options.interactive = shouldShow;
   });
+
+  metroStationMarkers.forEach(({ marker }) => {
+    marker.setOpacity(1);
+    marker.options.interactive = true;
+  });
 }
 
 function setHighlightedStationNames(names = []) {
@@ -341,51 +350,16 @@ function setShowAllStationMarkers(shouldShowAll) {
 }
 
 function clearHazardLayer() {
-  if (hazardLayer && homeMap && homeMap.hasLayer(hazardLayer)) {
-    hazardLayer.clearLayers();
-  }
+  if (hazardLayer && homeMap && homeMap.hasLayer(hazardLayer)) hazardLayer.clearLayers();
 }
 
 async function loadHazardsForCurrentView() {
   if (!homeMap) return;
-
-  const loadId = ++hazardLoadSeq;
-  const bounds = homeMap.getBounds().pad(0.12);
-  const sw = bounds.getSouthWest();
-  const ne = bounds.getNorthEast();
-
-  try {
-    const response = await navigationAPI.getHazards(sw.lng, sw.lat, ne.lng, ne.lat);
-    if (loadId !== hazardLoadSeq) return;
-
-    if (!hazardLayer) {
-      hazardLayer = L.layerGroup().addTo(homeMap);
-    } else {
-      hazardLayer.clearLayers();
-    }
-
-    const hazards = Array.isArray(response?.data) ? response.data : [];
-    hazards.forEach((hazard) => {
-      const lat = Number(hazard.lat);
-      const lng = Number(hazard.lng);
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-
-      L.marker([lat, lng], { icon: hazardPointIcon() })
-        .bindPopup(hazardPopupContent(hazard))
-        .addTo(hazardLayer);
-    });
-  } catch (err) {
-    if (loadId === hazardLoadSeq) {
-      console.warn('[map] Failed to load hazards:', err?.message || err);
-    }
-  }
+  clearHazardLayer();
 }
 
 function scheduleHazardReload() {
-  if (hazardLoadTimer) clearTimeout(hazardLoadTimer);
-  hazardLoadTimer = setTimeout(() => {
-    loadHazardsForCurrentView();
-  }, 250);
+  loadHazardsForCurrentView();
 }
 
 function updateRouteFeedback({ info = '', error = '' }) {
@@ -743,13 +717,19 @@ function getStationByQuery(query) {
   const normalized = normalizeStationQuery(query);
   if (!normalized) return null;
 
-  const exactMatch = MAP_STATIONS.find((station) => station.name.toLowerCase() === normalized);
+  const exactMatch = MAP_STATIONS.find((station) =>
+    station.name.toLowerCase() === normalized || String(station.nameAr || '').toLowerCase() === normalized
+  );
   if (exactMatch) return exactMatch;
 
-  const startsWithMatch = MAP_STATIONS.find((station) => station.name.toLowerCase().startsWith(normalized));
+  const startsWithMatch = MAP_STATIONS.find((station) =>
+    station.name.toLowerCase().startsWith(normalized) || String(station.nameAr || '').toLowerCase().startsWith(normalized)
+  );
   if (startsWithMatch) return startsWithMatch;
 
-  return MAP_STATIONS.find((station) => station.name.toLowerCase().includes(normalized)) || null;
+  return MAP_STATIONS.find((station) =>
+    station.name.toLowerCase().includes(normalized) || String(station.nameAr || '').toLowerCase().includes(normalized)
+  ) || null;
 }
 
 async function renderRoute(start, end, options = {}, callback) {
@@ -824,6 +804,7 @@ function addInMapRoutingControl() {
             <button id="map-btn-locate-me" type="button">📡 Locate Me</button>
             <button id="map-btn-current-route" type="button">📍 Route From My Location</button>
             <button id="map-btn-toggle-all-stations" type="button">👁️ Show All Stations</button>
+            <button id="map-btn-toggle-metro-names" type="button">🙈 Hide Metro Names</button>
           </div>
 
           <div class="map-route-panel__section-title">Weather Check</div>
@@ -882,6 +863,7 @@ function addInMapRoutingControl() {
       const locateBtn = wrap.querySelector('#map-btn-locate-me');
       const currentRouteBtn = wrap.querySelector('#map-btn-current-route');
       const toggleAllStationsBtn = wrap.querySelector('#map-btn-toggle-all-stations');
+      const toggleMetroNamesBtn = wrap.querySelector('#map-btn-toggle-metro-names');
       const pickPointBtn = wrap.querySelector('#map-btn-pick-point');
       const routePickedFromCurrentBtn = wrap.querySelector('#map-btn-route-picked-from-current');
       const hazardTypeSel = wrap.querySelector('#mapHazardType');
@@ -943,6 +925,12 @@ function addInMapRoutingControl() {
         const nextValue = !showAllStationMarkers;
         setShowAllStationMarkers(nextValue);
         toggleAllStationsBtn.textContent = nextValue ? '🙈 Hide Extra Stations' : '👁️ Show All Stations';
+      });
+
+      toggleMetroNamesBtn?.addEventListener('click', () => {
+        showMetroStationNames = !showMetroStationNames;
+        updateMetroStationNameVisibility();
+        toggleMetroNamesBtn.textContent = showMetroStationNames ? '🙈 Hide Metro Names' : '👁️ Show Metro Names';
       });
 
       toggleBtn?.addEventListener('click', () => {
@@ -1073,12 +1061,6 @@ function addInMapRoutingControl() {
             description
           );
 
-          L.marker([selectedMapPoint.lat, selectedMapPoint.lng], { icon: hazardPointIcon() })
-            .addTo(homeMap)
-            .bindPopup(
-              `<b>Hazard reported</b><br/>Type: ${type}<br/>Severity: ${severity}<br/>${description || 'No additional description.'}`
-            );
-
           updateRouteFeedback({
             info: response?.message || 'Hazard reported successfully for the selected place.',
           });
@@ -1134,7 +1116,6 @@ function renderInMapRouteLegend(container) {
         <div class="map-route-legend__row"><span class="map-route-legend__line map-route-legend__line--current"></span><span>Route from your live location</span></div>
         <div class="map-route-legend__row"><span class="map-route-legend__dot"></span><span>City/station marker</span></div>
         <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#5bd75b"></span><span>Place you picked on the map</span></div>
-        <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#eb5757"></span><span>Reported hazard</span></div>
         <div class="map-route-legend__row"><span class="map-route-legend__dot map-route-legend__dot--current"></span><span>Your current position</span></div>
       </div>
     </div>
@@ -1164,7 +1145,6 @@ function addInMapRouteLegendControl() {
           <div class="map-route-legend__row"><span class="map-route-legend__line map-route-legend__line--current"></span><span>Route from your live location</span></div>
           <div class="map-route-legend__row"><span class="map-route-legend__dot"></span><span>City/station marker</span></div>
           <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#5bd75b"></span><span>Place you picked on the map</span></div>
-          <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#eb5757"></span><span>Reported hazard</span></div>
           <div class="map-route-legend__row"><span class="map-route-legend__dot map-route-legend__dot--current"></span><span>Your current position</span></div>
         </div>
       `;
@@ -1194,13 +1174,16 @@ function initHomeMap() {
     initBusStopLayer(homeMap);
   }
 
-  loadHazardsForCurrentView();
-  homeMap.on('moveend zoomend', scheduleHazardReload);
+  clearHazardLayer();
 
-  MAP_STATIONS.forEach(station => {
+  MAP_STATIONS.forEach((station) => {
+    const isMetroStation = METRO_STATION_NAMES.has(station.name);
+    if (isMetroStation) return;
+
     const stationMarker = L.marker([station.lat, station.lng], { icon: goldIcon() })
       .addTo(homeMap)
-      .bindPopup(`<b>${station.name}</b>`);
+      .bindPopup(`<b>${station.name}</b>${station.nameAr ? `<br/><span dir="rtl">${station.nameAr}</span>` : ''}`);
+
     stationMarkers.push({ marker: stationMarker, name: station.name });
     stationMarker.on('add', updateStationMarkerVisibility);
   });

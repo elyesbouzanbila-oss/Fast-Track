@@ -2,14 +2,14 @@
 /**
  * import-csv-stops.js
  * ─────────────────────────────────────────────────────────────────────────
- * Imports bus stops from the project CSV file (bus_stops.csv) into the
- * transit_stops table.
+ * Imports stops from a CSV file into the transit_stops table.
  *
  * Usage:
- *   node scripts/import-csv-stops.js [path/to/bus_stops.csv] [--dry-run]
+ *   node scripts/import-csv-stops.js [path/to/stops.csv] [--dry-run] [--location-type=N]
  *
- * The CSV has three columns:
- *   name, latitude, longidude    ← note the typo in the header; handled below
+ * Supported CSV formats:
+ *   - bus_stops.csv: name, latitude, longitude (or longidude)
+ *   - metro_stations.csv: _id, Label_fr, Label_ar, Longitude, Latitude
  *
  * Behaviour:
  *   - Deduplicates rows by exact (lat, lng) so the same physical stop only
@@ -31,6 +31,10 @@ const DEFAULT_CSV = path.resolve(__dirname, '../../bus_stops.csv');
 const DRY_RUN     = process.argv.includes('--dry-run');
 const CSV_PATH    = process.argv.find(a => a.endsWith('.csv')) || DEFAULT_CSV;
 const BATCH_SIZE  = 200;
+const LOCATION_TYPE = Number.parseInt(
+  (process.argv.find(a => a.startsWith('--location-type=')) || '').split('=')[1] || '0',
+  10
+);
 
 // ── CSV parser (no external dependencies) ──────────────────────────────────
 
@@ -38,14 +42,18 @@ function parseCsv(content) {
   const lines = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
   if (!lines.length) return [];
 
-  // Normalise header — handle the "longidude" typo gracefully
   const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace('longidude', 'longitude'));
   const nameIdx = header.indexOf('name');
+  const labelFrIdx = header.indexOf('label_fr');
+  const labelArIdx = header.indexOf('label_ar');
+  const idIdx = header.indexOf('_id');
+  const genericIdIdx = header.indexOf('id');
   const latIdx  = header.indexOf('latitude');
   const lngIdx  = header.indexOf('longitude');
 
-  if (nameIdx < 0 || latIdx < 0 || lngIdx < 0) {
-    throw new Error(`CSV header must contain name, latitude, longitude (or longidude). Got: ${lines[0]}`);
+  const resolvedNameIdx = nameIdx >= 0 ? nameIdx : labelFrIdx;
+  if (resolvedNameIdx < 0 || latIdx < 0 || lngIdx < 0) {
+    throw new Error(`CSV header must contain name/Label_fr, latitude/Latitude, longitude/Longitude. Got: ${lines[0]}`);
   }
 
   const records = [];
@@ -63,14 +71,23 @@ function parseCsv(content) {
     }
     cols.push(cur);
 
-    const name = (cols[nameIdx] || '').trim();
-    const lat  = parseFloat(cols[latIdx]);
-    const lng  = parseFloat(cols[lngIdx]);
+    const rawName = (cols[resolvedNameIdx] || '').trim();
+    const rawDescription = labelArIdx >= 0 ? (cols[labelArIdx] || '').trim() : '';
+    const rawId = idIdx >= 0 ? (cols[idIdx] || '').trim() : (genericIdIdx >= 0 ? (cols[genericIdIdx] || '').trim() : '');
+    const lat  = parseFloat((cols[latIdx] || '').replace(',', '.'));
+    const lng  = parseFloat((cols[lngIdx] || '').replace(',', '.'));
 
-    if (!name || isNaN(lat) || isNaN(lng)) continue;
+    if (!rawName || isNaN(lat) || isNaN(lng)) continue;
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) continue;
 
-    records.push({ name, lat, lng });
+    records.push({
+      id: rawId,
+      name: rawName,
+      description: rawDescription || null,
+      lat,
+      lng,
+      location_type: Number.isNaN(LOCATION_TYPE) ? 0 : LOCATION_TYPE,
+    });
   }
   return records;
 }
@@ -80,12 +97,19 @@ function parseCsv(content) {
 function deduplicateStops(records) {
   const seen = new Map();
   for (const r of records) {
-    // Round to 7dp to catch floating-point noise while preserving precision
-    const key = `${r.lat.toFixed(7)},${r.lng.toFixed(7)}`;
+    const key = r.id ? `id:${r.id}` : `${r.lat.toFixed(7)},${r.lng.toFixed(7)}`;
     if (!seen.has(key)) {
-      // Deterministic ID — safe to re-import
-      const id = 'csv-' + crypto.createHash('md5').update(key).digest('hex').slice(0, 12);
-      seen.set(key, { id, name: r.name.slice(0, 255), lat: r.lat, lng: r.lng });
+      const id = r.id
+        ? `csv-${String(r.id).toLowerCase().replace(/[^a-z0-9_-]+/g, '-')}`
+        : 'csv-' + crypto.createHash('md5').update(key).digest('hex').slice(0, 12);
+      seen.set(key, {
+        id,
+        name: r.name.slice(0, 255),
+        description: r.description ? r.description.slice(0, 500) : null,
+        lat: r.lat,
+        lng: r.lng,
+        location_type: r.location_type,
+      });
     }
   }
   return Array.from(seen.values());
@@ -117,16 +141,18 @@ async function upsertBatch(stops) {
   let   p            = 1;
 
   for (const s of stops) {
-    placeholders.push(`($${p++}, $${p++}, ST_SetSRID(ST_MakePoint($${p++}, $${p++}), 4326), 0, 0)`);
-    values.push(s.id, s.name, s.lng, s.lat);
+    placeholders.push(`($${p++}, $${p++}, $${p++}, ST_SetSRID(ST_MakePoint($${p++}, $${p++}), 4326), $${p++}, 0)`);
+    values.push(s.id, s.name, s.description, s.lng, s.lat, s.location_type);
   }
 
   await sequelize.query(
-    `INSERT INTO transit_stops (id, name, location, location_type, wheelchair_boarding)
+    `INSERT INTO transit_stops (id, name, description, location, location_type, wheelchair_boarding)
      VALUES ${placeholders.join(', ')}
      ON CONFLICT (id) DO UPDATE SET
-       name     = EXCLUDED.name,
-       location = EXCLUDED.location`,
+       name          = EXCLUDED.name,
+       description   = EXCLUDED.description,
+       location      = EXCLUDED.location,
+       location_type = EXCLUDED.location_type`,
     { bind: values }
   );
 }

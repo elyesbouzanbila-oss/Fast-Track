@@ -81,6 +81,90 @@
     });
   }
 
+  function makeMetroIcon() {
+    return makeStationIcon('🚇', '#4fc3f7', 'metro-station-marker');
+  }
+
+  function makeTrainIcon() {
+    return makeStationIcon('🚆', '#ef5350', 'train-station-marker');
+  }
+
+  function makeStationIcon(symbol, color, className) {
+    return L.divIcon({
+      className,
+      html: `
+        <div class="station-marker-pin" style="background:${color};">
+          <span>${symbol}</span>
+        </div>
+      `,
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -26],
+    });
+  }
+
+  async function ensureMetroStationsData() {
+    if (Array.isArray(window.METRO_STATIONS) && window.METRO_STATIONS.length) return window.METRO_STATIONS;
+
+    await loadAsset('script', { src: '../js/metro-stations.js' });
+    return Array.isArray(window.METRO_STATIONS) ? window.METRO_STATIONS : [];
+  }
+
+  async function ensureTrainStationsData() {
+    if (Array.isArray(window.TRAIN_STATIONS) && window.TRAIN_STATIONS.length) return window.TRAIN_STATIONS;
+
+    await loadAsset('script', { src: '../js/train-stations.js' });
+    return Array.isArray(window.TRAIN_STATIONS) ? window.TRAIN_STATIONS : [];
+  }
+
+  async function ensureSeedBusStopsData() {
+    if (Array.isArray(window.__BUS_STOPS_SEED_DATA)) return window.__BUS_STOPS_SEED_DATA;
+
+    const response = await fetch('/bus_stops_seed.sql', { cache: 'no-store' });
+    if (!response.ok) {
+      window.__BUS_STOPS_SEED_DATA = [];
+      return [];
+    }
+
+    const sql = await response.text();
+    const rows = [];
+    const rowPattern = /\(\s*'((?:''|[^'])+)'\s*,\s*'((?:''|[^'])*)'\s*,\s*ST_SetSRID\(ST_MakePoint\(([-0-9.]+),\s*([-0-9.]+)\),\s*4326\)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)/g;
+    let match;
+
+    while ((match = rowPattern.exec(sql)) !== null) {
+      rows.push({
+        id: match[1].replace(/''/g, "'"),
+        name: match[2].replace(/''/g, "'"),
+        lng: Number(match[3]),
+        lat: Number(match[4]),
+        location_type: Number(match[5]),
+        wheelchair_boarding: Number(match[6]),
+      });
+    }
+
+    window.__BUS_STOPS_SEED_DATA = rows;
+    return rows;
+  }
+
+  function filterSeedStopsToBounds(stops, bounds, limit = 200) {
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+
+    return stops
+      .filter((stop) =>
+        Number.isFinite(stop.lat) &&
+        Number.isFinite(stop.lng) &&
+        stop.lng >= sw.lng && stop.lng <= ne.lng &&
+        stop.lat >= sw.lat && stop.lat <= ne.lat
+      )
+      .slice(0, limit)
+      .map((stop) => ({
+        ...stop,
+        description: stop.description || '',
+        platform_code: stop.platform_code || '',
+      }));
+  }
+
   // ── 3. Popup content ───────────────────────────────────────────────────
 
   function makePopup(stop) {
@@ -125,7 +209,8 @@
   async function fetchStopsInBounds(bounds) {
     const now = Date.now();
     if (fetchStopsInBounds.cooldownUntil && now < fetchStopsInBounds.cooldownUntil) {
-      return [];
+      const seedStops = await ensureSeedBusStopsData();
+      return filterSeedStopsToBounds(seedStops, bounds);
     }
 
     const sw = bounds.getSouthWest();
@@ -149,14 +234,18 @@
 
     try {
       const data = await navigationAPI.request(url);
-      return Array.isArray(data.data) ? data.data : [];
+      const apiStops = Array.isArray(data.data) ? data.data : [];
+      if (apiStops.length) return apiStops;
+      const seedStops = await ensureSeedBusStopsData();
+      return filterSeedStopsToBounds(seedStops, bounds);
     } catch (err) {
       if (err && err.status === 429) {
         // Back off when API says we're sending too many requests.
         fetchStopsInBounds.cooldownUntil = Date.now() + 20000;
       }
       console.warn('[bus-stops-layer] fetch failed:', err.message);
-      return [];
+      const seedStops = await ensureSeedBusStopsData();
+      return filterSeedStopsToBounds(seedStops, bounds);
     }
   }
 
@@ -176,62 +265,139 @@
     let loadedStopIds  = new Set();
     let isLoading      = false;
     let toggleBtn      = null;
+    let metroGroup     = null;
+    let metroVisible   = true;
+    let metroToggleBtn = null;
+    let trainGroup     = null;
+    let trainVisible   = true;
+    let trainToggleBtn = null;
 
     function createClusterGroup() {
-      return L.markerClusterGroup({
-        maxClusterRadius: 45,
-        disableClusteringAtZoom: 15,
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false,
-        iconCreateFunction(cluster) {
-          const count = cluster.getChildCount();
-          const size  = count < 10 ? 'sm' : count < 50 ? 'md' : 'lg';
-          return L.divIcon({
-            html: `<div class="bus-cluster bus-cluster--${size}">
-                     <span>${count}</span>
-                   </div>`,
-            className: '',
-            iconSize: L.point(40, 40),
-          });
-        },
+      return L.layerGroup();
+    }
+
+    async function loadMetroStations() {
+      if (window.__metroStationsLayerRendered) return;
+      const stations = await ensureMetroStationsData();
+      if (!stations.length || !leafletMap) return;
+
+      if (!metroGroup) {
+        metroGroup = L.layerGroup();
+      } else {
+        metroGroup.clearLayers();
+      }
+
+      stations.forEach((station) => {
+        const marker = L.marker([station.lat, station.lng], { icon: makeMetroIcon() });
+        marker.bindPopup(`<b>${station.name}</b>${station.nameAr ? `<br/><span dir="rtl">${station.nameAr}</span>` : ''}`, {
+          maxWidth: 220,
+          className: 'metro-popup',
+        });
+        metroGroup.addLayer(marker);
+      });
+
+      if (metroVisible) {
+        metroGroup.addTo(leafletMap);
+      }
+
+      window.__metroStationsLayerRendered = true;
+    }
+
+    async function loadTrainStations() {
+      if (window.__trainStationsLayerRendered) return;
+      const stations = await ensureTrainStationsData();
+      if (!stations.length || !leafletMap) return;
+
+      if (!trainGroup) {
+        trainGroup = L.layerGroup();
+      } else {
+        trainGroup.clearLayers();
+      }
+
+      stations.forEach((station) => {
+        const marker = L.marker([station.lat, station.lng], { icon: makeTrainIcon() });
+        const rows = [];
+        if (station.line) rows.push(`<div><b>Line:</b> ${station.line}</div>`);
+        if (station.status) rows.push(`<div><b>Status:</b> ${station.status}</div>`);
+        if (station.departure || station.arrival) {
+          rows.push(`<div><b>Route:</b> ${station.departure || ''}${station.departure && station.arrival ? ' → ' : ''}${station.arrival || ''}</div>`);
+        }
+        if (station.trajectory) rows.push(`<div><b>Length:</b> ${station.trajectory}</div>`);
+
+        marker.bindPopup(`
+          <div style="font-family:'Segoe UI',Arial,sans-serif;background:#1a1a1a;color:#e8e0d9;padding:10px 14px;border-radius:8px;min-width:170px;max-width:240px;line-height:1.45;">
+            <div style="font-weight:700;font-size:0.95rem;color:#f5c518;margin-bottom:4px;border-bottom:1px solid rgba(212,175,55,0.25);padding-bottom:4px;">🚆 ${station.name}</div>
+            ${rows.join('')}
+            <div style="font-size:0.72rem;color:#5a5040;margin-top:6px;">${Number(station.lat).toFixed(5)}, ${Number(station.lng).toFixed(5)}</div>
+          </div>
+        `, {
+          maxWidth: 260,
+          className: 'train-popup',
+        });
+        trainGroup.addLayer(marker);
+      });
+
+      if (trainVisible) {
+        trainGroup.addTo(leafletMap);
+      }
+      window.__trainStationsLayerRendered = true;
+    }
+
+    function syncLayerToggleButton(btn, visible, labels) {
+      if (!btn) return;
+      btn.classList.toggle('station-layer-toggle--active', visible);
+      btn.innerHTML = visible ? labels.hide : labels.show;
+      btn.title = visible ? labels.hide : labels.show;
+    }
+
+    function toggleBusLayer() {
+      stopsVisible = !stopsVisible;
+      if (stopsVisible) {
+        if (!clusterGroup) {
+          clusterGroup = createClusterGroup();
+          leafletMap.addLayer(clusterGroup);
+        } else {
+          leafletMap.addLayer(clusterGroup);
+        }
+        loadVisibleStops();
+      } else if (clusterGroup) {
+        leafletMap.removeLayer(clusterGroup);
+      }
+      syncLayerToggleButton(toggleBtn, stopsVisible, {
+        hide: '🚌 Hide Bus Stops',
+        show: '🚌 Show Bus Stops',
       });
     }
 
-    // ── Toggle button ──────────────────────────────────────────────────
-    const BusToggleControl = L.Control.extend({
-      options: { position: 'topright' },
-      onAdd() {
-        const btn = L.DomUtil.create('button', 'bus-stops-toggle');
-        btn.innerHTML = '🚌 Bus Stops';
-        btn.title     = 'Toggle bus stop layer';
-        L.DomEvent.disableClickPropagation(btn);
-        toggleBtn = btn;
+    function toggleMetroLayer() {
+      metroVisible = !metroVisible;
+      if (!metroGroup) loadMetroStations();
+      if (!metroGroup) return;
+      if (metroVisible) {
+        metroGroup.addTo(leafletMap);
+      } else {
+        leafletMap.removeLayer(metroGroup);
+      }
+      syncLayerToggleButton(metroToggleBtn, metroVisible, {
+        hide: '🚇 Hide Metro Stations',
+        show: '🚇 Show Metro Stations',
+      });
+    }
 
-        // Default state: visible on load.
-        btn.classList.add('bus-stops-toggle--active');
-
-        btn.addEventListener('click', async () => {
-          stopsVisible = !stopsVisible;
-          btn.classList.toggle('bus-stops-toggle--active', stopsVisible);
-
-          if (stopsVisible) {
-            if (!clusterGroup) {
-              clusterGroup = createClusterGroup();
-              leafletMap.addLayer(clusterGroup);
-            } else {
-              leafletMap.addLayer(clusterGroup);
-            }
-            await loadVisibleStops();
-          } else {
-            if (clusterGroup) leafletMap.removeLayer(clusterGroup);
-          }
-        });
-
-        return btn;
-      },
-    });
-
-    leafletMap.addControl(new BusToggleControl());
+    function toggleTrainLayer() {
+      trainVisible = !trainVisible;
+      if (!trainGroup) loadTrainStations();
+      if (!trainGroup) return;
+      if (trainVisible) {
+        trainGroup.addTo(leafletMap);
+      } else {
+        leafletMap.removeLayer(trainGroup);
+      }
+      syncLayerToggleButton(trainToggleBtn, trainVisible, {
+        hide: '🚆 Hide Train Stations',
+        show: '🚆 Show Train Stations',
+      });
+    }
 
     // ── Legend control ────────────────────────────────────────────────
     const BusLegendControl = L.Control.extend({
@@ -242,12 +408,22 @@
           <button class="bus-map-legend__toggle" type="button">🧾 Bus Map Guide</button>
           <div class="bus-map-legend__body">
             <div class="bus-map-legend__title">What You Are Seeing</div>
-            <div class="bus-map-legend__row"><span class="bus-map-legend__icon">🚌</span><span>Single bus stop</span></div>
-            <div class="bus-map-legend__row"><span class="bus-map-legend__dot bus-map-legend__dot--sm"></span><span>Few nearby stops</span></div>
-            <div class="bus-map-legend__row"><span class="bus-map-legend__dot bus-map-legend__dot--md"></span><span>Many nearby stops</span></div>
-            <div class="bus-map-legend__row"><span class="bus-map-legend__dot bus-map-legend__dot--lg"></span><span>Very dense stop area</span></div>
+            <div class="bus-map-legend__section-title">Layers</div>
+            <button class="station-layer-toggle station-layer-toggle--active" type="button">🚌 Hide Bus Stops</button>
+            <button class="station-layer-toggle station-layer-toggle--active" type="button">🚇 Hide Metro Stations</button>
+            <button class="station-layer-toggle station-layer-toggle--active" type="button">🚆 Hide Train Stations</button>
+            <div class="bus-map-legend__section-title">Map Key</div>
+            <div class="bus-map-legend__row"><span class="bus-map-legend__icon">🚌</span><span>Bus stop marker</span></div>
+            <div class="bus-map-legend__row"><span class="bus-map-legend__icon">🚇</span><span>Metro station marker</span></div>
+            <div class="bus-map-legend__row"><span class="bus-map-legend__icon">🚆</span><span>Train station marker</span></div>
+            <div class="bus-map-legend__row"><span class="bus-map-legend__dot bus-map-legend__dot--md"></span><span>Visible bus stop in view</span></div>
           </div>
         `;
+        const controls = legend.querySelectorAll('.station-layer-toggle');
+        [toggleBtn, metroToggleBtn, trainToggleBtn] = controls;
+        toggleBtn?.addEventListener('click', () => toggleBusLayer());
+        metroToggleBtn?.addEventListener('click', () => toggleMetroLayer());
+        trainToggleBtn?.addEventListener('click', () => toggleTrainLayer());
         legend.querySelector('.bus-map-legend__toggle')?.addEventListener('click', () => {
           legend.classList.toggle('bus-map-legend--collapsed');
         });
@@ -262,12 +438,30 @@
     clusterGroup = createClusterGroup();
     leafletMap.addLayer(clusterGroup);
 
+    // Load metro stations immediately on first load
+    loadMetroStations();
+    loadTrainStations();
+
+    // Keep legend button labels in sync with the default visible state.
+    syncLayerToggleButton(toggleBtn, stopsVisible, {
+      hide: '🚌 Hide Bus Stops',
+      show: '🚌 Show Bus Stops',
+    });
+    syncLayerToggleButton(metroToggleBtn, metroVisible, {
+      hide: '🚇 Hide Metro Stations',
+      show: '🚇 Show Metro Stations',
+    });
+    syncLayerToggleButton(trainToggleBtn, trainVisible, {
+      hide: '🚆 Hide Train Stations',
+      show: '🚆 Show Train Stations',
+    });
+
     // ── Load stops for current viewport ───────────────────────────────
     async function loadVisibleStops() {
       if (!stopsVisible || isLoading) return;
 
       // Fetch from initial map zoom so stops are visible right away.
-      if (leafletMap.getZoom() < 7) {
+      if (leafletMap.getZoom() < 6) {
         if (clusterGroup) clusterGroup.clearLayers();
         loadedStopIds.clear();
         showZoomHint();
@@ -281,17 +475,18 @@
 
       const newStops = stops.filter(s => !loadedStopIds.has(s.id));
 
-      if (newStops.length && clusterGroup) {
+        if (stops.length && clusterGroup) {
         const markers = newStops.map(stop => {
           loadedStopIds.add(stop.id);
-          const marker = L.marker([stop.lat, stop.lng], { icon: makeBusIcon() });
+          const stopType = Number(stop.location_type) === 1 ? 'metro' : 'bus';
+          const marker = L.marker([stop.lat, stop.lng], { icon: makeBusIcon(stopType) });
           marker.bindPopup(makePopup(stop), {
             maxWidth: 240,
             className: 'bus-popup',
           });
           return marker;
         });
-        clusterGroup.addLayers(markers);
+          markers.forEach((marker) => clusterGroup.addLayer(marker));
       }
 
       isLoading = false;
@@ -327,7 +522,9 @@
     }
 
     await loadVisibleStops();
+    await loadMetroStations();
     if (toggleBtn) toggleBtn.classList.add('bus-stops-toggle--active');
+    if (metroToggleBtn) metroToggleBtn.classList.add('metro-names-toggle--active');
 
     console.info('[bus-stops-layer] Initialised ✅ (visible by default)');
   }
@@ -352,6 +549,30 @@
 
     /* Prevent default Leaflet DivIcon wrapper styling */
     .bus-stop-icon { background: none !important; border: none !important; }
+    .metro-station-marker,
+    .train-station-marker {
+      background: none !important;
+      border: none !important;
+    }
+    .station-marker-pin {
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .station-marker-pin span {
+      transform: rotate(45deg);
+      color: #fff;
+      font-family: 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1;
+    }
 
     /* Toggle button */
     .bus-stops-toggle {
@@ -409,6 +630,14 @@
       background: transparent;
       color: #f5c518;
       text-align: left;
+    .bus-map-legend__section-title {
+      margin: 8px 0 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #bfae88;
+    }
       font-weight: 700;
       padding: 8px 8px 7px;
       cursor: pointer;
@@ -429,6 +658,30 @@
       gap: 8px;
       margin: 5px 0;
       white-space: nowrap;
+    .station-layer-toggle {
+      width: 100%;
+      margin: 4px 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(212,175,55,0.28);
+      background: rgba(32,32,32,0.95);
+      color: #f1eadf;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      transition: background .18s, border-color .18s, color .18s;
+    }
+    .station-layer-toggle:hover {
+      background: rgba(44,44,44,0.98);
+      border-color: #d4af37;
+    }
+    .station-layer-toggle--active {
+      color: #f5c518;
+      border-color: #d4af37;
+      background: rgba(212,175,55,0.14);
+    }
     }
     .bus-map-legend__icon {
       width: 16px;
