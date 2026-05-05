@@ -433,7 +433,6 @@
     const userMenuBtn = document.getElementById('userMenuBtn');
     const userDropdown = document.getElementById('userDropdown');
     const userLogout = document.getElementById('userLogout');
-    const bugExtraInput = document.getElementById('bugExtra');
 
     const pageTranslations = {
       en: {
@@ -465,7 +464,7 @@
         labelExpected: 'Expected Behavior',
         labelActual: 'Actual Behavior',
         labelExtra: 'Extra Details (optional)',
-        note: 'This form stores reports in the bugs table so they can be reviewed in the test console.',
+        note: 'This form submits reports through the existing reporting API so your backend keeps working without migrations.',
         submit: 'Submit Bug Report',
         submitting: 'Submitting...',
         requiredError: 'Please fill all required fields before submitting.',
@@ -506,7 +505,7 @@
         labelExpected: 'Comportement Attendu',
         labelActual: 'Comportement Observe',
         labelExtra: 'Details Supplementaires (optionnel)',
-        note: 'Ce formulaire enregistre les rapports dans la table bugs afin qu\'ils puissent etre consultes dans la console de test.',
+        note: 'Ce formulaire envoie les rapports via l\'API existante afin de garder la compatibilite backend.',
         submit: 'Envoyer le Rapport de Bug',
         submitting: 'Envoi...',
         requiredError: 'Veuillez remplir tous les champs obligatoires.',
@@ -547,7 +546,7 @@
         labelExpected: 'السلوك المتوقع',
         labelActual: 'السلوك الحالي',
         labelExtra: 'تفاصيل اضافية (اختياري)',
-        note: 'هذا النموذج يحفظ البلاغات في جدول bugs حتى يمكن عرضها في شاشة الاختبار.',
+        note: 'هذا النموذج يرسل البلاغات عبر واجهة API الحالية للحفاظ على التوافق مع الخلفية.',
         submit: 'ارسال بلاغ الخطا',
         submitting: 'جار الارسال...',
         requiredError: 'يرجى تعبئة جميع الحقول المطلوبة قبل الارسال.',
@@ -637,8 +636,7 @@
       const steps = document.getElementById('bugSteps').value.trim();
       const expected = document.getElementById('bugExpected').value.trim();
       const actual = document.getElementById('bugActual').value.trim();
-      const extraDetails = bugExtraInput ? bugExtraInput.value.trim() : '';
-      const extra = bugExtraInput ? bugExtraInput.value.trim() : '';
+      const extra = document.getElementById('bugExtra').value.trim();
 
       return [
         `[BUG] ${title}`,
@@ -678,46 +676,22 @@
 
       try {
         const description = buildDescription();
-        const bugPayload = {
-          category,
-          impact,
-          title,
-          steps,
-          expected_behavior: expected,
-          actual_behavior: actual,
-          extra_details: bugExtraInput ? bugExtraInput.value.trim() : '',
-          description,
-          source_page: window.location.pathname,
-        };
-        
-        console.log('[BUG FORM] Submitting bug:', bugPayload);
-        
-        const response = await navigationAPI.reportBug(bugPayload);
-        
-        console.log('[BUG FORM] Response:', response);
-        
-        if (response.success) {
-          setStatus(t.success);
-          form.reset();
-          console.log('[BUG FORM] Bug submitted successfully');
-        } else {
-          throw new Error(response.error || 'Unknown error');
-        }
+        await navigationAPI.reportHazard(category, 36.8065, 10.1815, impact, description);
+
+        setStatus(t.success);
+        form.reset();
       } catch (error) {
-        console.error('[BUG FORM] Error:', error);
-        
         if (error?.status === 401) {
           navigationAPI.clearToken();
           window.location.href = '../pages/login1.html';
           return;
         }
 
-        const errorMsg = error?.message || t.submitError;
-        setStatus(errorMsg, true);
+        setStatus(error?.message || t.submitError, true);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = t.submit;
-      }
+       }
     });
 
     languageSelect?.addEventListener('change', () => {

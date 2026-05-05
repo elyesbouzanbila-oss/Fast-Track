@@ -5,7 +5,7 @@
  * showRoute accepts an optional callback(result) so callers can display
  * distance/duration inline instead of relying on alert() or console.log.
  */
-
+ 
 const BASE_STATIONS = [
   // Major Cities
   { name: 'Tunis',       lat: 36.8065, lng: 10.1815 },
@@ -80,11 +80,11 @@ const BASE_STATIONS = [
   { name: 'Remada',      lat: 32.3250, lng: 10.3920 },
   { name: 'Bir Lahmar',  lat: 33.0900, lng: 10.3810 },
 ];
-
+ 
 const METRO_STATIONS = Array.isArray(window.METRO_STATIONS) ? window.METRO_STATIONS : [];
 const MAP_STATIONS = [...BASE_STATIONS, ...METRO_STATIONS];
 const METRO_STATION_NAMES = new Set(METRO_STATIONS.map((station) => station.name));
-
+ 
 let homeMap        = null;
 let homeRouteLayer = null;
 let currentLocation = null;
@@ -100,39 +100,39 @@ let stationMarkers = [];
 let highlightedStationNames = new Set();
 let showAllStationMarkers = false;
 const weatherCache = new Map();
-
+ 
 const STATION_MARKER_ZOOM_THRESHOLD = 10;
-
+ 
 function goldIcon() {
   return L.icon({ iconUrl: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png', iconSize: [32, 32] });
 }
-
+ 
 function currentLocationIcon() {
   return L.icon({ iconUrl: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png', iconSize: [36, 36] });
 }
-
+ 
 function selectedPointIcon() {
   return L.icon({ iconUrl: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png', iconSize: [34, 34] });
 }
-
+ 
 function hazardPointIcon() {
   return L.icon({ iconUrl: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png', iconSize: [34, 34] });
 }
-
+ 
 function hazardTypeLabel(type) {
   return String(type || 'other')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
-
+ 
 function hazardSeverityLabel(severity) {
   return String(severity || 'medium').toUpperCase();
 }
-
+ 
 function hazardPopupContent(hazard) {
   const description = hazard.description ? `<div style="margin-top:6px;">${hazard.description}</div>` : '';
   const expiresAt = hazard.expires_at ? `<div style="margin-top:6px; font-size:0.72rem; color:#5a5040;">Expires: ${new Date(hazard.expires_at).toLocaleString()}</div>` : '';
-
+ 
   return `
     <div style="font-family:'Segoe UI',Arial,sans-serif;background:#1a1a1a;color:#e8e0d9;padding:10px 14px;border-radius:8px;min-width:180px;max-width:240px;line-height:1.45;">
       <div style="font-weight:700;font-size:0.95rem;color:#f5c518;margin-bottom:4px;border-bottom:1px solid rgba(212,175,55,0.25);padding-bottom:4px;">⚠️ ${hazardTypeLabel(hazard.type)}</div>
@@ -143,7 +143,7 @@ function hazardPopupContent(hazard) {
       ${expiresAt}
     </div>`;
 }
-
+ 
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -152,7 +152,7 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
-
+ 
 function weatherEmoji(code) {
   const numericCode = Number(code);
   if ([0].includes(numericCode)) return '☀️';
@@ -168,7 +168,7 @@ function weatherEmoji(code) {
   if ([95, 96, 99].includes(numericCode)) return '⛈️';
   return '🌡️';
 }
-
+ 
 function weatherDescription(code) {
   const descriptions = {
     0: 'Clear sky',
@@ -200,18 +200,18 @@ function weatherDescription(code) {
     96: 'Thunderstorm with hail',
     99: 'Severe thunderstorm with hail',
   };
-
+ 
   return descriptions[Number(code)] || 'Unknown conditions';
 }
-
+ 
 function weatherCacheKey(lat, lng) {
   return `${Number(lat).toFixed(3)},${Number(lng).toFixed(3)}`;
 }
-
+ 
 async function fetchOpenMeteoWeather(lat, lng) {
   const cacheKey = weatherCacheKey(lat, lng);
   if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey);
-
+ 
   const url = new URL('https://api.open-meteo.com/v1/forecast');
   url.searchParams.set('latitude', String(lat));
   url.searchParams.set('longitude', String(lng));
@@ -219,10 +219,10 @@ async function fetchOpenMeteoWeather(lat, lng) {
   url.searchParams.set('daily', 'temperature_2m_max,temperature_2m_min,weather_code');
   url.searchParams.set('forecast_days', '1');
   url.searchParams.set('timezone', 'auto');
-
+ 
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), 8000);
-
+ 
   let response;
   try {
     response = await fetch(url.toString(), {
@@ -237,16 +237,16 @@ async function fetchOpenMeteoWeather(lat, lng) {
   } finally {
     window.clearTimeout(timeoutId);
   }
-
+ 
   if (!response.ok) {
     throw new Error(`Open-Meteo request failed (${response.status})`);
   }
-
+ 
   const data = await response.json();
   weatherCache.set(cacheKey, data);
   return data;
 }
-
+ 
 function formatWeatherCard(title, lat, lng, weatherData) {
   const current = weatherData?.current || {};
   const daily = weatherData?.daily || {};
@@ -257,7 +257,7 @@ function formatWeatherCard(title, lat, lng, weatherData) {
   const weatherCode = current.weather_code ?? daily.weather_code?.[0] ?? null;
   const dayMax = daily.temperature_2m_max?.[0];
   const dayMin = daily.temperature_2m_min?.[0];
-
+ 
   return `
     <div class="map-weather-card">
       <div class="map-weather-card__title">${escapeHtml(title)}</div>
@@ -272,7 +272,7 @@ function formatWeatherCard(title, lat, lng, weatherData) {
     </div>
   `;
 }
-
+ 
 function updateWeatherFeedback({ info = '', error = '', loading = false, html = '' }) {
   const statusEl = document.getElementById('map-weather-status');
   const resultsEl = document.getElementById('map-weather-results');
@@ -286,13 +286,13 @@ function updateWeatherFeedback({ info = '', error = '', loading = false, html = 
     resultsEl.style.display = html ? 'block' : 'none';
   }
 }
-
+ 
 async function renderWeatherForPoint(point, title) {
   if (!point) {
     updateWeatherFeedback({ error: 'Pick or choose a location first.' });
     return;
   }
-
+ 
   try {
     updateWeatherFeedback({ loading: true, info: `Fetching weather for ${title}…` });
     const weather = await fetchOpenMeteoWeather(point.lat, point.lng);
@@ -304,7 +304,7 @@ async function renderWeatherForPoint(point, title) {
     updateWeatherFeedback({ error: err?.message || 'Could not load weather.' });
   }
 }
-
+ 
 async function renderWeatherForStations() {
   try {
     updateWeatherFeedback({ loading: true, info: 'Fetching weather for all station markers…' });
@@ -322,10 +322,10 @@ async function renderWeatherForStations() {
     updateWeatherFeedback({ error: err?.message || 'Could not load weather for stations.' });
   }
 }
-
+ 
 function updateStationMarkerVisibility() {
   if (!homeMap) return;
-
+ 
   const shouldShowAll = showAllStationMarkers || homeMap.getZoom() >= STATION_MARKER_ZOOM_THRESHOLD;
   stationMarkers.forEach(({ marker, name }) => {
     const shouldShow = shouldShowAll || highlightedStationNames.has(name);
@@ -333,30 +333,63 @@ function updateStationMarkerVisibility() {
     marker.options.interactive = shouldShow;
   });
 }
-
+ 
 function setHighlightedStationNames(names = []) {
   highlightedStationNames = new Set(names.filter(Boolean));
   updateStationMarkerVisibility();
 }
-
+ 
 function setShowAllStationMarkers(shouldShowAll) {
   showAllStationMarkers = Boolean(shouldShowAll);
   updateStationMarkerVisibility();
 }
-
+ 
 function clearHazardLayer() {
-  if (hazardLayer && homeMap && homeMap.hasLayer(hazardLayer)) hazardLayer.clearLayers();
+  // FIX: guard against hazardLayer being null before calling clearLayers()
+  if (hazardLayer) hazardLayer.clearLayers();
 }
-
+ 
+// FIX: actually fetch hazards from the API and render them as red markers
 async function loadHazardsForCurrentView() {
-  if (!homeMap) return;
-  clearHazardLayer();
-}
+  if (!homeMap || !hazardLayer) return;
 
+  const seq = ++hazardLoadSeq;
+  try {
+    // Get visible area
+    const bounds = homeMap.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+
+    // Call API with coordinates
+    const response = await navigationAPI.getHazards(sw.lng, sw.lat, ne.lng, ne.lat);
+    
+    if (seq !== hazardLoadSeq) return;
+    if (!response?.success) return;
+
+    // ONLY clear layers if we actually got a successful response
+    hazardLayer.clearLayers();
+
+    const hazards = response.data?.hazards || response.data || [];
+    hazards.forEach((hazard) => {
+      const lat = Number(hazard.lat);
+      const lng = Number(hazard.lng);
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+      L.marker([lat, lng], { icon: hazardPointIcon() })
+        .bindPopup(hazardPopupContent(hazard))
+        .addTo(hazardLayer);
+    });
+  } catch (err) {
+    console.warn('Could not load hazards:', err?.message || err);
+  }
+}
+ 
 function scheduleHazardReload() {
-  loadHazardsForCurrentView();
+  // Debounce rapid calls (e.g. map move + zoom firing together)
+  clearTimeout(hazardLoadTimer);
+  hazardLoadTimer = setTimeout(() => loadHazardsForCurrentView(), 300);
 }
-
+ 
 function updateRouteFeedback({ info = '', error = '' }) {
   const infoEl = document.getElementById('home-route-info');
   const errEl = document.getElementById('home-route-error');
@@ -368,7 +401,7 @@ function updateRouteFeedback({ info = '', error = '' }) {
     errEl.textContent = error;
     errEl.style.display = error ? 'block' : 'none';
   }
-
+ 
   const panelStatus = document.getElementById('map-route-status');
   if (panelStatus) {
     panelStatus.textContent = error || info || '';
@@ -376,11 +409,11 @@ function updateRouteFeedback({ info = '', error = '' }) {
     panelStatus.classList.toggle('map-route-status--error', Boolean(error));
   }
 }
-
+ 
 function injectInMapUiStyles() {
   if (inMapStylesInjected) return;
   inMapStylesInjected = true;
-
+ 
   const style = document.createElement('style');
   style.textContent = `
     .map-route-panel {
@@ -494,7 +527,7 @@ function injectInMapUiStyles() {
       border-color: rgba(224,92,92,0.4);
       color: #f19a9a;
     }
-
+ 
     .map-weather-actions {
       display: grid;
       grid-template-columns: 1fr;
@@ -579,7 +612,7 @@ function injectInMapUiStyles() {
       font-size: 11px;
       color: #87abc1;
     }
-
+ 
     .map-route-legend {
       min-width: 190px;
       background: rgba(17,17,17,0.92);
@@ -629,7 +662,7 @@ function injectInMapUiStyles() {
   `;
   document.head.appendChild(style);
 }
-
+ 
 async function reverseGeocodeLabel(lat, lng) {
   try {
     const response = await navigationAPI.reverseGeocode(lat, lng);
@@ -640,33 +673,33 @@ async function reverseGeocodeLabel(lat, lng) {
     return '';
   }
 }
-
+ 
 function setSelectedMapPoint(lat, lng, label = '') {
   selectedMapPoint = { lat, lng };
-
+ 
   if (selectedPointMarker) homeMap.removeLayer(selectedPointMarker);
   const safeLabel = label ? `<br/>${label}` : '';
-
+ 
   selectedPointMarker = L.marker([lat, lng], { icon: selectedPointIcon() })
     .addTo(homeMap)
     .bindPopup(
       `<b>Selected place</b>${safeLabel}<br/>Lat: ${lat.toFixed(6)}<br/>Lng: ${lng.toFixed(6)}`
     )
     .openPopup();
-
+ 
   const selectedCoordsEl = document.getElementById('map-selected-coords');
   if (selectedCoordsEl) {
     selectedCoordsEl.textContent = `Selected: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
   }
 }
-
+ 
 function resolveCurrentLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       reject(new Error('Geolocation is not supported by this browser.'));
       return;
     }
-
+ 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
@@ -681,52 +714,52 @@ function resolveCurrentLocation() {
     );
   });
 }
-
+ 
 async function showCurrentLocationOnMap() {
   if (!homeMap) throw new Error('Map not ready yet.');
-
+ 
   const loc = await resolveCurrentLocation();
   currentLocation = loc;
-
+ 
   if (currentMarker) homeMap.removeLayer(currentMarker);
   currentMarker = L.marker([loc.lat, loc.lng], { icon: currentLocationIcon() })
     .addTo(homeMap)
     .bindPopup(`<b>Your current location</b><br/>Accuracy: ~${Math.round(loc.accuracy || 0)} m`)
     .openPopup();
-
+ 
   homeMap.setView([loc.lat, loc.lng], Math.max(homeMap.getZoom(), 13));
   updateRouteFeedback({ info: '📡 Current location found and centered on map.' });
   return loc;
 }
-
+ 
 function getStationByIndex(index) {
   const idx = parseInt(index, 10);
   return Number.isNaN(idx) ? null : MAP_STATIONS[idx] || null;
 }
-
+ 
 function normalizeStationQuery(value) {
   return String(value || '').trim().toLowerCase();
 }
-
+ 
 function getStationByQuery(query) {
   const normalized = normalizeStationQuery(query);
   if (!normalized) return null;
-
+ 
   const exactMatch = MAP_STATIONS.find((station) =>
     station.name.toLowerCase() === normalized || String(station.nameAr || '').toLowerCase() === normalized
   );
   if (exactMatch) return exactMatch;
-
+ 
   const startsWithMatch = MAP_STATIONS.find((station) =>
     station.name.toLowerCase().startsWith(normalized) || String(station.nameAr || '').toLowerCase().startsWith(normalized)
   );
   if (startsWithMatch) return startsWithMatch;
-
+ 
   return MAP_STATIONS.find((station) =>
     station.name.toLowerCase().includes(normalized) || String(station.nameAr || '').toLowerCase().includes(normalized)
   ) || null;
 }
-
+ 
 async function renderRoute(start, end, options = {}, callback) {
   const {
     buttonEl = null,
@@ -736,38 +769,38 @@ async function renderRoute(start, end, options = {}, callback) {
     errorPrefix = 'Could not calculate route',
     highlightStations = [],
   } = options;
-
+ 
   const fail = (msg) => {
     updateRouteFeedback({ error: msg });
     if (callback) callback({ error: msg });
   };
-
+ 
   if (!start || !end) return fail('Invalid route endpoints.');
-
+ 
   if (homeRouteLayer) { homeMap.removeLayer(homeRouteLayer); homeRouteLayer = null; }
   if (buttonEl) { buttonEl.disabled = true; buttonEl.textContent = busyText; }
-
+ 
   try {
     const response = await navigationAPI.calculateRoute(
       { lat: start.lat, lng: start.lng },
       { lat: end.lat,   lng: end.lng   },
       'car'
     );
-
+ 
     if (!response.success) throw new Error(response.error || 'Route failed');
-
+ 
     const routeData = response.data.route;
-
+ 
     homeRouteLayer = L.geoJSON(routeData.geometry, {
       style: { color: routeColor, weight: 5, opacity: 0.86 },
     }).addTo(homeMap);
     homeMap.fitBounds(homeRouteLayer.getBounds());
     setHighlightedStationNames(highlightStations);
-
+ 
     const dist = (routeData.distance / 1000).toFixed(2);
     const dur  = Math.round(routeData.duration / 60);
     const msg = `📍 ${dist} km  ·  ⏱ ${dur} min${routeData.demo === true ? '  (estimated)' : ''}`;
-
+ 
     updateRouteFeedback({ info: msg });
     if (callback) callback({ dist, dur, demo: routeData.demo === true });
   } catch (err) {
@@ -776,12 +809,12 @@ async function renderRoute(start, end, options = {}, callback) {
     if (buttonEl) { buttonEl.disabled = false; buttonEl.textContent = idleText; }
   }
 }
-
+ 
 function addInMapRoutingControl() {
   const stationOptionHtml = MAP_STATIONS
     .map((station) => `<option value="${station.name}"></option>`)
     .join('');
-
+ 
   const RouteControl = L.Control.extend({
     options: { position: 'topleft' },
     onAdd() {
@@ -800,7 +833,7 @@ function addInMapRoutingControl() {
             <button id="map-btn-current-route" type="button">📍 Route From My Location</button>
             <button id="map-btn-toggle-all-stations" type="button">👁️ Show All Stations</button>
           </div>
-
+ 
           <div class="map-route-panel__section-title">Weather Check</div>
           <div class="map-weather-actions">
             <button id="map-btn-weather-selected" type="button">🌦️ Weather at Selected Place</button>
@@ -810,14 +843,14 @@ function addInMapRoutingControl() {
           </div>
           <div id="map-weather-status" class="map-weather-status"></div>
           <div id="map-weather-results" class="map-weather-results"></div>
-
+ 
           <div class="map-route-panel__section-title">Pick Any Place On Map</div>
           <p id="map-selected-coords" class="map-route-panel__coords">Selected: none</p>
           <div class="map-route-actions">
             <button id="map-btn-pick-point" type="button">🎯 Pick Place On Map</button>
             <button id="map-btn-route-picked-from-current" type="button">📍 Current → Picked</button>
           </div>
-
+ 
           <div class="map-route-panel__section-title">Report Hazard On Picked Place</div>
           <label class="map-route-panel__label" for="mapHazardType">Hazard Type</label>
           <select id="mapHazardType">
@@ -830,7 +863,7 @@ function addInMapRoutingControl() {
             <option value="unsafe_area">Unsafe area</option>
             <option value="other">Other</option>
           </select>
-
+ 
           <label class="map-route-panel__label" for="mapHazardSeverity">Severity</label>
           <select id="mapHazardSeverity">
             <option value="low">Low</option>
@@ -838,18 +871,18 @@ function addInMapRoutingControl() {
             <option value="high">High</option>
             <option value="critical">Critical</option>
           </select>
-
+ 
           <label class="map-route-panel__label" for="mapHazardDescription">Description (optional)</label>
           <textarea id="mapHazardDescription" placeholder="Describe what happened..."></textarea>
-
+ 
           <div class="map-route-actions">
             <button id="map-btn-report-hazard" type="button">⚠️ Report Hazard Here</button>
           </div>
-
+ 
           <div id="map-route-status" class="map-route-status"></div>
         </div>
       `;
-
+ 
       const toggleBtn = wrap.querySelector('.map-route-panel__toggle');
       const fromSel = wrap.querySelector('#mapFromStation');
       const toSel = wrap.querySelector('#mapToStation');
@@ -867,10 +900,10 @@ function addInMapRoutingControl() {
       const weatherFromBtn = wrap.querySelector('#map-btn-weather-from');
       const weatherToBtn = wrap.querySelector('#map-btn-weather-to');
       const weatherAllBtn = wrap.querySelector('#map-btn-weather-all');
-
+ 
       if (fromSel) fromSel.value = MAP_STATIONS[0]?.name || '';
       if (toSel) toSel.value = MAP_STATIONS[1]?.name || '';
-
+ 
       const syncStationHighlights = () => {
         if (showAllStationMarkers) return;
         const names = [];
@@ -880,10 +913,10 @@ function addInMapRoutingControl() {
         if (end && end.name !== start?.name) names.push(end.name);
         setHighlightedStationNames(names);
       };
-
+ 
       fromSel?.addEventListener('input', syncStationHighlights);
       toSel?.addEventListener('input', syncStationHighlights);
-
+ 
       weatherSelectedBtn?.addEventListener('click', async () => {
         if (!selectedMapPoint) {
           updateWeatherFeedback({ error: 'Pick a place on the map first.' });
@@ -891,7 +924,7 @@ function addInMapRoutingControl() {
         }
         await renderWeatherForPoint(selectedMapPoint, 'Selected place');
       });
-
+ 
       weatherFromBtn?.addEventListener('click', async () => {
         const start = getStationByQuery(fromSel?.value);
         if (!start) {
@@ -900,7 +933,7 @@ function addInMapRoutingControl() {
         }
         await renderWeatherForPoint(start, `From station: ${start.name}`);
       });
-
+ 
       weatherToBtn?.addEventListener('click', async () => {
         const end = getStationByQuery(toSel?.value);
         if (!end) {
@@ -909,21 +942,21 @@ function addInMapRoutingControl() {
         }
         await renderWeatherForPoint(end, `To station: ${end.name}`);
       });
-
+ 
       weatherAllBtn?.addEventListener('click', async () => {
         await renderWeatherForStations();
       });
-
+ 
       toggleAllStationsBtn?.addEventListener('click', () => {
         const nextValue = !showAllStationMarkers;
         setShowAllStationMarkers(nextValue);
         toggleAllStationsBtn.textContent = nextValue ? '🙈 Hide Extra Stations' : '👁️ Show All Stations';
       });
-
+ 
       toggleBtn?.addEventListener('click', () => {
         wrap.classList.toggle('map-route-panel--collapsed');
       });
-
+ 
       routeBtn?.addEventListener('click', async () => {
         const start = getStationByQuery(fromSel?.value);
         const end = getStationByQuery(toSel?.value);
@@ -947,7 +980,7 @@ function addInMapRoutingControl() {
           highlightStations: [start.name, end.name],
         });
       });
-
+ 
       locateBtn?.addEventListener('click', async () => {
         try {
           locateBtn.disabled = true;
@@ -960,7 +993,7 @@ function addInMapRoutingControl() {
           locateBtn.textContent = '📡 Locate Me';
         }
       });
-
+ 
       currentRouteBtn?.addEventListener('click', async () => {
         const end = getStationByQuery(toSel?.value);
         if (!end) {
@@ -987,28 +1020,28 @@ function addInMapRoutingControl() {
           currentRouteBtn.textContent = '📍 Route From My Location';
         }
       });
-
+ 
       pickPointBtn?.addEventListener('click', () => {
         isAwaitingPointPick = !isAwaitingPointPick;
         pickPointBtn.textContent = isAwaitingPointPick
           ? '✖ Cancel Picking'
           : '🎯 Pick Place On Map';
-
+ 
         if (isAwaitingPointPick) {
           updateRouteFeedback({ info: 'Click anywhere on the map to select a place.' });
         }
       });
-
+ 
       routePickedFromCurrentBtn?.addEventListener('click', async () => {
         if (!selectedMapPoint) {
           updateRouteFeedback({ error: 'Pick a place on the map first.' });
           return;
         }
-
+ 
         try {
           routePickedFromCurrentBtn.disabled = true;
           routePickedFromCurrentBtn.textContent = '⌛ Locating…';
-
+ 
           const start = currentLocation || await showCurrentLocationOnMap();
           await renderRoute(start, selectedMapPoint, {
             buttonEl: routePickedFromCurrentBtn,
@@ -1025,21 +1058,21 @@ function addInMapRoutingControl() {
           routePickedFromCurrentBtn.textContent = '📍 Current → Picked';
         }
       });
-
+ 
       reportHazardBtn?.addEventListener('click', async () => {
         if (!selectedMapPoint) {
           updateRouteFeedback({ error: 'Pick a place on the map before reporting a hazard.' });
           return;
         }
-
+ 
         const type = hazardTypeSel?.value || 'other';
         const severity = hazardSeveritySel?.value || 'medium';
         const description = (hazardDescriptionEl?.value || '').trim();
-
+ 
         try {
           reportHazardBtn.disabled = true;
           reportHazardBtn.textContent = '⌛ Reporting…';
-
+ 
           const response = await navigationAPI.reportHazard(
             type,
             selectedMapPoint.lat,
@@ -1047,11 +1080,14 @@ function addInMapRoutingControl() {
             severity,
             description
           );
-
+ 
           updateRouteFeedback({
             info: response?.message || 'Hazard reported successfully for the selected place.',
           });
           if (hazardDescriptionEl) hazardDescriptionEl.value = '';
+ 
+          // FIX: reload hazard markers so the new one appears immediately as a red dot
+          scheduleHazardReload();
         } catch (err) {
           if (err?.status === 401) {
             navigationAPI.clearToken();
@@ -1064,16 +1100,16 @@ function addInMapRoutingControl() {
           reportHazardBtn.textContent = '⚠️ Report Hazard Here';
         }
       });
-
+ 
       homeMap.on('click', async (event) => {
         if (!isAwaitingPointPick) return;
-
+ 
         isAwaitingPointPick = false;
         if (pickPointBtn) pickPointBtn.textContent = '🎯 Pick Place On Map';
-
+ 
         const { lat, lng } = event.latlng;
         setSelectedMapPoint(lat, lng);
-
+ 
         const label = await reverseGeocodeLabel(lat, lng);
         if (label) {
           setSelectedMapPoint(lat, lng, label);
@@ -1082,19 +1118,19 @@ function addInMapRoutingControl() {
           updateRouteFeedback({ info: '✅ Place selected on map. You can now route or report hazard.' });
         }
       });
-
+ 
       L.DomEvent.disableClickPropagation(wrap);
       L.DomEvent.disableScrollPropagation(wrap);
       return wrap;
     },
   });
-
+ 
   homeMap.addControl(new RouteControl());
 }
-
+ 
 function renderInMapRouteLegend(container) {
   if (!container) return false;
-
+ 
   container.innerHTML = `
     <div class="map-route-legend map-route-legend--collapsed">
       <button class="map-route-legend__toggle" type="button">📖 Map Guide</button>
@@ -1104,23 +1140,24 @@ function renderInMapRouteLegend(container) {
         <div class="map-route-legend__row"><span class="map-route-legend__dot"></span><span>City/station marker</span></div>
         <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#5bd75b"></span><span>Place you picked on the map</span></div>
         <div class="map-route-legend__row"><span class="map-route-legend__dot map-route-legend__dot--current"></span><span>Your current position</span></div>
+        <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#e05c5c"></span><span>Reported hazard</span></div>
       </div>
     </div>
   `;
-
+ 
   container.querySelector('.map-route-legend__toggle')?.addEventListener('click', () => {
     container.firstElementChild?.classList.toggle('map-route-legend--collapsed');
   });
-
+ 
   return true;
 }
-
+ 
 function addInMapRouteLegendControl() {
   const sidebarLegend = document.getElementById('map-guide');
   if (renderInMapRouteLegend(sidebarLegend)) {
     return;
   }
-
+ 
   const RouteLegend = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd() {
@@ -1133,48 +1170,52 @@ function addInMapRouteLegendControl() {
           <div class="map-route-legend__row"><span class="map-route-legend__dot"></span><span>City/station marker</span></div>
           <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#5bd75b"></span><span>Place you picked on the map</span></div>
           <div class="map-route-legend__row"><span class="map-route-legend__dot map-route-legend__dot--current"></span><span>Your current position</span></div>
+          <div class="map-route-legend__row"><span class="map-route-legend__dot" style="background:#e05c5c"></span><span>Reported hazard</span></div>
         </div>
       `;
-
+ 
       legend.querySelector('.map-route-legend__toggle')?.addEventListener('click', () => {
         legend.classList.toggle('map-route-legend--collapsed');
       });
-
+ 
       L.DomEvent.disableClickPropagation(legend);
       return legend;
     },
   });
-
+ 
   homeMap.addControl(new RouteLegend());
 }
-
+ 
 function initHomeMap() {
   if (homeMap) return;
-
+ 
   homeMap = L.map('map').setView([36.8065, 10.1815], 7);
-
+ 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; OpenStreetMap &amp; CartoDB',
   }).addTo(homeMap);
-
+ 
   if (typeof initBusStopLayer === 'function') {
     initBusStopLayer(homeMap);
   }
-
-  clearHazardLayer();
-
+ 
+  // FIX 1: initialise hazardLayer as a real LayerGroup on the map,
+  // then immediately load any existing hazards from the server.
+  hazardLayer = L.layerGroup().addTo(homeMap);
+  loadHazardsForCurrentView();
+ 
   MAP_STATIONS.forEach((station) => {
     const isMetroStation = METRO_STATION_NAMES.has(station.name);
     if (isMetroStation) return;
-
+ 
     const marker = L.marker([station.lat, station.lng], { icon: goldIcon() })
       .addTo(homeMap)
       .bindPopup(`<b>${station.name}</b>${station.nameAr ? `<br/><span dir="rtl">${station.nameAr}</span>` : ''}`);
-
+ 
     marker.on('add', updateStationMarkerVisibility);
     stationMarkers.push({ marker, name: station.name });
   });
-
+ 
   // Populate station dropdowns BEFORE Choices.js wraps them
   const fromSel = document.getElementById('fromStation');
   const toSel   = document.getElementById('toStation');
@@ -1182,7 +1223,7 @@ function initHomeMap() {
     fromSel.value = MAP_STATIONS[0]?.name || '';
     toSel.value = MAP_STATIONS[1]?.name || '';
   }
-
+ 
   injectInMapUiStyles();
   addInMapRoutingControl();
   const routePanel = document.querySelector('.map-route-panel');
@@ -1196,7 +1237,7 @@ function initHomeMap() {
   homeMap.on('moveend', updateStationMarkerVisibility);
   window.homeMap = homeMap;
 }
-
+ 
 /**
  * Calculate and display a route on the home map.
  * @param {Function} [callback] - optional fn(result) where result = { dist, dur, demo, error }
@@ -1205,25 +1246,25 @@ async function showRoute(callback) {
   const fromSel = document.getElementById('fromStation');
   const toSel   = document.getElementById('toStation');
   const btn     = document.getElementById('btn-show-route');
-
+ 
   const start = getStationByQuery(fromSel ? fromSel.value : '');
   const end   = getStationByQuery(toSel   ? toSel.value   : '');
-
+ 
   const fail = (msg) => {
     if (callback) callback({ error: msg });
     else alert(msg);
   };
-
+ 
   if (!start || !end) {
     return fail('Please type valid departure and arrival stations.');
   }
   if (start.name === end.name) {
     return fail('Please select different origin and destination stations.');
   }
-
+ 
   if (fromSel) fromSel.value = start.name;
   if (toSel) toSel.value = end.name;
-
+ 
   await renderRoute(start, end, {
     buttonEl: btn,
     idleText: '🗺️ Show Route',
@@ -1233,7 +1274,7 @@ async function showRoute(callback) {
     highlightStations: [start.name, end.name],
   }, callback);
 }
-
+ 
 /**
  * Calculate route from geolocated current position to selected destination.
  * @param {Function} [callback] - optional fn(result) where result = { dist, dur, demo, error }
@@ -1241,22 +1282,22 @@ async function showRoute(callback) {
 async function showRouteFromCurrentLocation(callback, options = {}) {
   const toSel = document.getElementById('toStation');
   const btn   = options.buttonEl || document.getElementById('btn-route-from-current');
-
+ 
   const end = Number.isInteger(options.toIndex)
     ? MAP_STATIONS[options.toIndex] || null
     : getStationByQuery(toSel ? toSel.value : '');
-
+ 
   const fail = (msg) => {
     if (callback) callback({ error: msg });
     else alert(msg);
   };
-
+ 
   if (!end) {
     return fail('Please type a valid destination station.');
   }
-
+ 
   if (toSel) toSel.value = end.name;
-
+ 
   try {
     const start = await showCurrentLocationOnMap();
     await renderRoute(start, end, {
@@ -1272,8 +1313,9 @@ async function showRouteFromCurrentLocation(callback, options = {}) {
     fail(`Could not calculate route from current location: ${msg}`);
   }
 }
-
+ 
 window.showRoute   = showRoute;
 window.showCurrentLocationOnMap = showCurrentLocationOnMap;
 window.showRouteFromCurrentLocation = showRouteFromCurrentLocation;
 window.initHomeMap = initHomeMap;
+ 
