@@ -43,6 +43,16 @@ describe('Authentication & Account Management', () => {
       expect(res.body.details[0].msg).toContain('8');
     });
 
+    it('returns 422 for password without special characters', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        name: 'User',
+        email: `special-${Date.now()}@example.com`,
+        password: 'Password123',
+      });
+      expect(res.status).toBe(422);
+      expect(res.body.details.some((detail) => String(detail.msg).toLowerCase().includes('special'))).toBe(true);
+    });
+
     it('prevents duplicate emails', async () => {
       const email = `dup-${Date.now()}@example.com`;
       await request(app).post('/api/auth/register').send({

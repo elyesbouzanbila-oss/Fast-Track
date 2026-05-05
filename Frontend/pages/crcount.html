@@ -210,6 +210,11 @@
     const nameInput   = document.getElementById('name');
     const emailInput  = document.getElementById('email');
     const passInput   = document.getElementById('password');
+    const nameError   = document.getElementById('error-name');
+    const emailError  = document.getElementById('error-email');
+    const passwordError = document.getElementById('error-password');
+    const generalError = document.getElementById('error-general');
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // ── Password visibility toggle ───────────────────────────────────────────
     document.getElementById('togglePassword').addEventListener('click', () => {
@@ -222,36 +227,82 @@
     function fieldErr(id, msg) {
       const el = document.getElementById('error-' + id);
       if (el) el.textContent = msg;
+
+      const input = id === 'name' ? nameInput : id === 'email' ? emailInput : id === 'password' ? passInput : null;
+      if (input) {
+        const hasValue = input.value.trim().length > 0;
+        const isValid = !msg;
+        input.classList.toggle('valid', hasValue && isValid);
+        input.classList.toggle('invalid', hasValue && !isValid);
+        if (hasValue && !isValid) {
+          input.setAttribute('aria-invalid', 'true');
+        } else {
+          input.removeAttribute('aria-invalid');
+        }
+      }
     }
     function clearErrors() {
       document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      nameInput.classList.remove('valid', 'invalid');
+      emailInput.classList.remove('valid', 'invalid');
+      passInput.classList.remove('valid', 'invalid');
+      nameInput.removeAttribute('aria-invalid');
+      emailInput.removeAttribute('aria-invalid');
+      passInput.removeAttribute('aria-invalid');
+    }
+
+    function isStrongPassword(password) {
+      if (password.length < 8 || /\s/.test(password)) return false;
+      return (
+        /[a-z]/.test(password) &&
+        /[A-Z]/.test(password) &&
+        /[0-9]/.test(password) &&
+        /[!@#$%^&*(),.?":{}|<>_\-\\/[\]=+]/.test(password)
+      );
     }
 
     // ── Client-side validation ────────────────────────────────────────────────
-    function validate() {
+    function validate({ force = false } = {}) {
       clearErrors();
-      let ok = true;
 
-      if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
-        fieldErr('name', i18next.t('error_name_short'));
-        ok = false;
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passInput.value;
+
+      const nameMessage = !name || name.length < 2 ? i18next.t('error_name_short') : '';
+      const emailMessage = !email
+        ? i18next.t('error_email_required')
+        : (emailPattern.test(email) ? '' : i18next.t('error_email_invalid'));
+      const passwordMessage = !password
+        ? i18next.t('error_password_required')
+        : (isStrongPassword(password) ? '' : i18next.t('error_password_weak'));
+
+      fieldErr('name', force || name.length > 0 ? nameMessage : '');
+      fieldErr('email', force || email.length > 0 ? emailMessage : '');
+      fieldErr('password', force || password.length > 0 ? passwordMessage : '');
+
+      if (generalError && !nameMessage && !emailMessage && !passwordMessage) {
+        generalError.textContent = '';
       }
-      if (!emailInput.value.trim()) {
-        fieldErr('email', i18next.t('error_email_required'));
-        ok = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
-        fieldErr('email', i18next.t('error_email_invalid'));
-        ok = false;
-      }
-      if (!passInput.value) {
-        fieldErr('password', i18next.t('error_password_required'));
-        ok = false;
-      } else if (passInput.value.length < 8) {
-        fieldErr('password', i18next.t('error_password_weak'));
-        ok = false;
-      }
+
+      const ok = !nameMessage && !emailMessage && !passwordMessage;
+      submitBtn.disabled = !ok;
       return ok;
     }
+
+    function syncValidation() {
+      if (generalError) {
+        generalError.textContent = '';
+      }
+      validate();
+    }
+
+    nameInput.addEventListener('input', syncValidation);
+    emailInput.addEventListener('input', syncValidation);
+    passInput.addEventListener('input', syncValidation);
+    nameInput.addEventListener('blur', () => validate({ force: true }));
+    emailInput.addEventListener('blur', () => validate({ force: true }));
+    passInput.addEventListener('blur', () => validate({ force: true }));
 
     // ── Map backend validation errors to the correct field ───────────────────
     // express-validator v7 uses `path` (not the old `param`).
@@ -272,7 +323,7 @@
 
     // ── Form submission ───────────────────────────────────────────────────────
     submitBtn.addEventListener('click', async () => {
-      if (!validate()) return;
+      if (!validate({ force: true })) return;
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creating account…';
@@ -305,6 +356,8 @@
         submitBtn.textContent = i18next.t('submit_btn');
       }
     });
+
+    validate();
   </script>
 </body>
 </html>

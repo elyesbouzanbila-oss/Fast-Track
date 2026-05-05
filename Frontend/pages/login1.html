@@ -96,7 +96,10 @@
     const checkButton  = document.getElementById('checkButton');
     const emailInput   = document.getElementById('email');
     const passInput    = document.getElementById('pass');
+    const emailError   = document.getElementById('error-email');
+    const passwordError = document.getElementById('error-password');
     const errorMessage = document.getElementById('errorMessage');
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // ── Password visibility toggle ───────────────────────────────────────────
     document.getElementById('togglePassword').addEventListener('click', () => {
@@ -112,28 +115,66 @@
     function clearErrors() {
       errorMessage.style.display = 'none';
       errorMessage.textContent = '';
-      document.getElementById('error-email').textContent = '';
-      document.getElementById('error-password').textContent = '';
+      emailError.textContent = '';
+      passwordError.textContent = '';
+      emailInput.classList.remove('valid', 'invalid');
+      passInput.classList.remove('valid', 'invalid');
+      emailInput.removeAttribute('aria-invalid');
+      passInput.removeAttribute('aria-invalid');
     }
 
-    // ── Client-side validation (saves a round-trip for obviously empty fields) ──
-    function validate() {
-      clearErrors();
-      let ok = true;
-      if (!emailInput.value.trim()) {
-        document.getElementById('error-email').textContent = i18next.t('error_email_required');
-        ok = false;
+    function setFieldState(input, errorEl, message, force = false) {
+      const hasValue = input.value.trim().length > 0;
+      const shouldShow = force || hasValue;
+      const isValid = !message;
+
+      input.classList.toggle('valid', shouldShow && isValid);
+      input.classList.toggle('invalid', shouldShow && !isValid);
+      if (shouldShow && !isValid) {
+        input.setAttribute('aria-invalid', 'true');
+      } else {
+        input.removeAttribute('aria-invalid');
       }
-      if (!passInput.value) {
-        document.getElementById('error-password').textContent = i18next.t('error_password_required');
-        ok = false;
+
+      if (errorEl) {
+        errorEl.textContent = shouldShow && !isValid ? message : '';
       }
+    }
+
+    // ── Client-side validation (saves a round-trip for obviously invalid fields) ──
+    function validate({ force = false } = {}) {
+      const email = emailInput.value.trim();
+      const password = passInput.value;
+
+      const emailMessage = !email
+        ? i18next.t('error_email_required')
+        : (emailPattern.test(email) ? '' : i18next.t('error_email_invalid'));
+      const passwordMessage = !password
+        ? i18next.t('error_password_required')
+        : '';
+
+      setFieldState(emailInput, emailError, emailMessage, force);
+      setFieldState(passInput, passwordError, passwordMessage, force);
+
+      const ok = !emailMessage && !passwordMessage;
+      checkButton.disabled = !ok;
       return ok;
     }
 
+    function syncValidation() {
+      errorMessage.style.display = 'none';
+      errorMessage.textContent = '';
+      validate();
+    }
+
+    emailInput.addEventListener('input', syncValidation);
+    passInput.addEventListener('input', syncValidation);
+    emailInput.addEventListener('blur', () => validate({ force: true }));
+    passInput.addEventListener('blur', () => validate({ force: true }));
+
     // ── Login handler ─────────────────────────────────────────────────────────
     checkButton.addEventListener('click', async () => {
-      if (!validate()) return;
+      if (!validate({ force: true })) return;
 
       checkButton.disabled = true;
       checkButton.value = 'Logging in…';
@@ -162,6 +203,8 @@
         checkButton.value = i18next.t('submit_btn');
       }
     });
+
+    validate();
 
     // Allow pressing Enter in the password field to submit
     passInput.addEventListener('keydown', (e) => {

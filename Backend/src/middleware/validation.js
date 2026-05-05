@@ -33,7 +33,7 @@ const validateRouteRequest = validate([
   // OSRM either errors or returns a zero-distance route which is useless and
   // wastes a network round-trip to the routing engine.
   body('destination').custom((dest, { req }) => {
-    const origin = req.body.origin;
+    const { origin } = req.body;
     if (
       origin &&
       typeof dest === 'object' &&
@@ -71,11 +71,29 @@ const validateHazardReport = validate([
   body('radius_meters').optional().isInt({ min: 5, max: 5000 }),
 ]);
 
+// --- Bug validation ---
+const validateBugReport = validate([
+  body('category').trim().isLength({ min: 2, max: 60 }).withMessage('Bug category is required'),
+  body('impact')
+    .isIn(['low', 'medium', 'high', 'critical'])
+    .withMessage('Impact must be low, medium, high, or critical'),
+  body('title').trim().isLength({ min: 3, max: 120 }).withMessage('Title is required'),
+  body('steps').trim().isLength({ min: 5, max: 500 }).withMessage('Steps are required'),
+  body('expected_behavior').trim().isLength({ min: 5, max: 300 }).withMessage('Expected behavior is required'),
+  body('actual_behavior').trim().isLength({ min: 5, max: 300 }).withMessage('Actual behavior is required'),
+  body('extra_details').optional({ checkFalsy: true }).isLength({ max: 350 }),
+  body('description').optional({ checkFalsy: true }).isLength({ max: 2000 }),
+  body('source_page').optional({ checkFalsy: true }).isLength({ max: 255 }),
+]);
+
 // --- Auth validation ---
 const validateRegister = validate([
   body('name').trim().isLength({ min: 2, max: 100 }),
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('password')
+    .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s])/)
+    .withMessage('Password must include uppercase, lowercase, number, and special character'),
 ]);
 
 const validateLogin = validate([
@@ -88,6 +106,7 @@ module.exports = {
   validateRouteRequest,
   validateSnapRequest,
   validateHazardReport,
+  validateBugReport,
   validateRegister,
   validateLogin,
 };

@@ -332,11 +332,6 @@ function updateStationMarkerVisibility() {
     marker.setOpacity(shouldShow ? 1 : 0);
     marker.options.interactive = shouldShow;
   });
-
-  metroStationMarkers.forEach(({ marker }) => {
-    marker.setOpacity(1);
-    marker.options.interactive = true;
-  });
 }
 
 function setHighlightedStationNames(names = []) {
@@ -804,7 +799,6 @@ function addInMapRoutingControl() {
             <button id="map-btn-locate-me" type="button">📡 Locate Me</button>
             <button id="map-btn-current-route" type="button">📍 Route From My Location</button>
             <button id="map-btn-toggle-all-stations" type="button">👁️ Show All Stations</button>
-            <button id="map-btn-toggle-metro-names" type="button">🙈 Hide Metro Names</button>
           </div>
 
           <div class="map-route-panel__section-title">Weather Check</div>
@@ -863,7 +857,6 @@ function addInMapRoutingControl() {
       const locateBtn = wrap.querySelector('#map-btn-locate-me');
       const currentRouteBtn = wrap.querySelector('#map-btn-current-route');
       const toggleAllStationsBtn = wrap.querySelector('#map-btn-toggle-all-stations');
-      const toggleMetroNamesBtn = wrap.querySelector('#map-btn-toggle-metro-names');
       const pickPointBtn = wrap.querySelector('#map-btn-pick-point');
       const routePickedFromCurrentBtn = wrap.querySelector('#map-btn-route-picked-from-current');
       const hazardTypeSel = wrap.querySelector('#mapHazardType');
@@ -925,12 +918,6 @@ function addInMapRoutingControl() {
         const nextValue = !showAllStationMarkers;
         setShowAllStationMarkers(nextValue);
         toggleAllStationsBtn.textContent = nextValue ? '🙈 Hide Extra Stations' : '👁️ Show All Stations';
-      });
-
-      toggleMetroNamesBtn?.addEventListener('click', () => {
-        showMetroStationNames = !showMetroStationNames;
-        updateMetroStationNameVisibility();
-        toggleMetroNamesBtn.textContent = showMetroStationNames ? '🙈 Hide Metro Names' : '👁️ Show Metro Names';
       });
 
       toggleBtn?.addEventListener('click', () => {
@@ -1180,12 +1167,12 @@ function initHomeMap() {
     const isMetroStation = METRO_STATION_NAMES.has(station.name);
     if (isMetroStation) return;
 
-    const stationMarker = L.marker([station.lat, station.lng], { icon: goldIcon() })
+    const marker = L.marker([station.lat, station.lng], { icon: goldIcon() })
       .addTo(homeMap)
       .bindPopup(`<b>${station.name}</b>${station.nameAr ? `<br/><span dir="rtl">${station.nameAr}</span>` : ''}`);
 
-    stationMarkers.push({ marker: stationMarker, name: station.name });
-    stationMarker.on('add', updateStationMarkerVisibility);
+    marker.on('add', updateStationMarkerVisibility);
+    stationMarkers.push({ marker, name: station.name });
   });
 
   // Populate station dropdowns BEFORE Choices.js wraps them

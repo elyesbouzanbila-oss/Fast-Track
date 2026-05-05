@@ -8,11 +8,15 @@ const rateLimit = require('express-rate-limit');
 // Import sub-routers
 const routeRoutes = require('./routeRoutes');
 const hazardRoutes = require('./hazardRoutes');
+const bugRoutes = require('./bugRoutes');
 
-// Auth rate limiter — stricter than global
+// Auth rate limiter — keep it aligned with the shared rate-limit config so
+// repeated local test runs do not get blocked by a stale hardcoded cap.
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
+  windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS || process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000, 10),
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX || process.env.RATE_LIMIT_MAX || 100, 10),
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { success: false, error: 'Too many auth attempts, please try again later.' },
 });
 
@@ -86,6 +90,7 @@ router.get('/auth/me', authenticate, (req, res) => {
 // --- Mount sub-routers ---
 router.use('/route', routeRoutes);
 router.use('/hazards', hazardRoutes);
+router.use('/bugs', bugRoutes);
 
 // --- Health check ---
 router.get('/health', (req, res) => {

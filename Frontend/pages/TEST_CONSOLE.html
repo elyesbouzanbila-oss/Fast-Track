@@ -4,335 +4,642 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Integration Test Console</title>
+  <link rel="stylesheet" href="../css/enhanced.css">
   <style>
+    :root {
+      --console-bg: #0b0f14;
+      --console-panel: rgba(17, 23, 32, 0.96);
+      --console-panel-strong: rgba(11, 15, 20, 0.98);
+      --console-border: rgba(212, 175, 55, 0.18);
+      --console-text: #efe8dc;
+      --console-muted: #a39a88;
+      --console-gold: #d4af37;
+      --console-gold-bright: #f5c518;
+      --console-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    body {
-      background: #1e1e1e;
-      color: #e0e0e0;
-      font-family: 'Courier New', monospace;
-      padding: 20px;
-      max-width: 1400px;
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body.console-page {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--console-text);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(212, 175, 55, 0.12), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(77, 103, 141, 0.16), transparent 34%),
+        linear-gradient(180deg, #0c1118 0%, #10151d 45%, #0b0f14 100%);
+      overflow-x: hidden;
+    }
+
+    body.console-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255,255,255,0.015), rgba(255,255,255,0.015)),
+        radial-gradient(circle at 20% 10%, rgba(212,175,55,0.05), transparent 28%),
+        radial-gradient(circle at 80% 90%, rgba(77,103,141,0.06), transparent 28%);
+      z-index: 0;
+    }
+
+    .console-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1320px;
       margin: 0 auto;
+      padding: 24px clamp(16px, 3vw, 32px) 40px;
     }
 
-    header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 30px;
-      border-radius: 10px;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 0.9em;
-      opacity: 0.9;
-    }
-
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    @media (max-width: 1024px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: #2d2d2d;
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 20px;
+    .console-hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      padding: 24px 28px;
+      margin-bottom: 22px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(20, 27, 38, 0.96), rgba(11, 15, 20, 0.94));
+      border: 1px solid var(--console-border);
+      box-shadow: var(--console-shadow);
+      position: relative;
       overflow: hidden;
     }
 
+    .console-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(212,175,55,0.08) 50%, transparent 100%);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .hero-brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .hero-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      flex: 0 0 auto;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(212, 175, 55, 0.18);
+      padding: 10px;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+    }
+
+    .eyebrow {
+      margin-bottom: 6px;
+      color: var(--console-gold-bright);
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .console-hero h1 {
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      margin-bottom: 10px;
+      letter-spacing: -0.03em;
+      color: #f3eadc;
+    }
+
+    .hero-subtitle {
+      max-width: 58ch;
+      color: var(--console-muted);
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+
+    .hero-chips {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 175, 55, 0.18);
+      background: rgba(255, 255, 255, 0.04);
+      color: #e8e0d9;
+      font-size: 0.84rem;
+      white-space: nowrap;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    .console-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(17, 23, 32, 0.96), rgba(11, 15, 20, 0.98));
+      border: 1px solid rgba(212, 175, 55, 0.16);
+      border-radius: 22px;
+      padding: 22px;
+      overflow: hidden;
+      box-shadow: var(--console-shadow);
+      backdrop-filter: blur(10px);
+      animation: card-in 0.55s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(212,175,55,.28), transparent 45%, rgba(212,175,55,.12));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card > * {
+      position: relative;
+      z-index: 1;
+    }
+
     .card h3 {
-      color: #667eea;
-      margin-bottom: 15px;
-      font-size: 1.2em;
-      border-bottom: 2px solid #667eea;
-      padding-bottom: 10px;
+      color: #f3e2a2;
+      margin-bottom: 12px;
+      font-size: 1.08rem;
+      letter-spacing: 0.02em;
     }
 
     .card p {
-      font-size: 0.85em;
-      color: #999;
+      font-size: 0.95rem;
+      color: var(--console-muted);
       margin-bottom: 15px;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .button-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
 
     button {
-      background: #667eea;
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
       border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
+      border-radius: 999px;
       cursor: pointer;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85em;
-      transition: all 0.3s;
+      font: inherit;
+      font-weight: 700;
+      color: #1a1407;
+      background: linear-gradient(135deg, #d4af37 0%, #f5c518 100%);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.28);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     }
 
     button:hover {
-      background: #764ba2;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow: 0 16px 28px rgba(0, 0, 0, 0.34);
     }
 
     button:active {
       transform: translateY(0);
     }
 
-    .output {
-      background: #1a1a1a;
-      border: 1px solid #444;
-      border-radius: 5px;
-      padding: 15px;
-      margin-top: 15px;
-      max-height: 300px;
-      overflow-y: auto;
-      font-size: 0.8em;
-    }
-
-    .log-entry {
-      margin-bottom: 8px;
-      padding: 5px;
-      border-left: 3px solid #667eea;
-      padding-left: 10px;
-    }
-
-    .log-success {
-      color: #4caf50;
-      border-left-color: #4caf50;
-    }
-
-    .log-error {
-      color: #f44336;
-      border-left-color: #f44336;
-    }
-
-    .log-info {
-      color: #2196f3;
-      border-left-color: #2196f3;
-    }
-
-    .log-warning {
-      color: #ff9800;
-      border-left-color: #ff9800;
-    }
-
-    .status {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 5px;
-      text-align: center;
-    }
-
-    .status.running {
-      background: #1e3a5f;
-      border: 1px solid #2196f3;
-      color: #2196f3;
-    }
-
-    .status.success {
-      background: #1b5e20;
-      border: 1px solid #4caf50;
-      color: #4caf50;
-    }
-
-    .status.error {
-      background: #5f1c1c;
-      border: 1px solid #f44336;
-      color: #f44336;
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .input-group {
-      display: flex;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
       margin-bottom: 15px;
     }
 
     input {
-      flex: 1;
-      padding: 8px 12px;
-      background: #1a1a1a;
-      border: 1px solid #444;
-      color: #e0e0e0;
-      border-radius: 5px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85em;
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(8, 12, 18, 0.95);
+      border: 1px solid rgba(212, 175, 55, 0.16);
+      color: var(--console-text);
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    input::placeholder {
+      color: #7f775f;
+    }
+
+    input:focus {
+      border-color: rgba(245, 197, 24, 0.55);
+      box-shadow: 0 0 0 3px rgba(212,175,55,0.14);
+      background: rgba(10, 14, 20, 1);
     }
 
     .full-width {
       grid-column: 1 / -1;
     }
 
-    .badge {
-      display: inline-block;
-      background: #667eea;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75em;
-      margin-right: 5px;
+    .output {
+      background: var(--console-panel-strong);
+      border: 1px solid rgba(212, 175, 55, 0.12);
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 15px;
+      max-height: 340px;
+      overflow-y: auto;
+      font-size: 0.88rem;
     }
 
-    .badge.success {
-      background: #4caf50;
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 8px 10px;
+      border-left: 3px solid var(--console-gold);
+      padding-left: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 0 10px 10px 0;
     }
 
-    .badge.error {
-      background: #f44336;
+    .log-success {
+      color: #84d79b;
+      border-left-color: #84d79b;
+    }
+
+    .log-error {
+      color: #ff938a;
+      border-left-color: #ff938a;
+    }
+
+    .log-info {
+      color: #94b9ff;
+      border-left-color: #94b9ff;
+    }
+
+    .log-warning {
+      color: #f5c518;
+      border-left-color: #f5c518;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      text-align: center;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .status.running {
+      background: rgba(40, 72, 109, 0.32);
+      border-color: rgba(102, 160, 255, 0.35);
+      color: #9dc0ff;
+    }
+
+    .status.success {
+      background: rgba(28, 92, 44, 0.34);
+      border-color: rgba(132, 215, 155, 0.32);
+      color: #84d79b;
+    }
+
+    .status.error {
+      background: rgba(104, 32, 32, 0.34);
+      border-color: rgba(255, 147, 138, 0.32);
+      color: #ff938a;
     }
 
     code {
-      background: #1a1a1a;
-      padding: 2px 6px;
-      border-radius: 3px;
-      color: #4caf50;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(212, 175, 55, 0.14);
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: #f1d37c;
+      font-size: 0.92em;
     }
 
     .summary {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-top: 20px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
     }
 
     .summary-item {
-      background: #1a1a1a;
-      padding: 15px;
-      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 16px 14px;
+      border-radius: 18px;
       text-align: center;
-      border: 1px solid #444;
+      border: 1px solid rgba(212, 175, 55, 0.12);
     }
 
     .summary-item strong {
       display: block;
-      font-size: 1.8em;
-      color: #667eea;
-      margin-bottom: 5px;
+      font-size: 1.8rem;
+      color: #f3e2a2;
+      margin-bottom: 6px;
     }
 
     .summary-item span {
-      font-size: 0.85em;
-      color: #999;
+      font-size: 0.88rem;
+      color: var(--console-muted);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid rgba(212, 175, 55, 0.12);
+      border-radius: 18px;
+      background: #0e131a;
+      max-height: 360px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+      font-size: 0.86rem;
+    }
+
+    .data-table th,
+    .data-table td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 12px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .data-table th {
+      position: sticky;
+      top: 0;
+      background: rgba(18, 24, 33, 0.98);
+      color: #f5c518;
+      z-index: 1;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(212, 175, 55, 0.06);
+    }
+
+    .bug-empty {
+      color: var(--console-muted);
+      text-align: center;
+      padding: 20px 12px;
+    }
+
+    .console-footer {
+      margin-top: 2px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .callout {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.12);
+      color: var(--console-muted);
+      line-height: 1.6;
+    }
+
+    .callout strong {
+      color: #f3e2a2;
+    }
+
+    .callout + .callout {
+      margin-top: 12px;
+    }
+
+    .footer-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+      color: var(--console-muted);
+    }
+
+    .footer-list li {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.08);
+    }
+
+    .empty-state {
+      color: var(--console-muted);
+      text-align: center;
+      padding: 20px 12px;
+    }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(18px) scale(.985); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 1080px) {
+      .console-hero {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hero-chips {
+        justify-items: start;
+      }
+
+      .console-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .console-shell {
+        padding: 16px 14px 28px;
+      }
+
+      .console-hero {
+        padding: 20px;
+      }
+
+      .hero-brand {
+        align-items: flex-start;
+      }
+
+      .hero-logo {
+        width: 60px;
+        height: 60px;
+        padding: 8px;
+      }
+
+      .input-group,
+      .summary,
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
-<body>
-
-  <header>
-    <h1>🧪 Frontend-Backend Integration Test Console</h1>
-    <p class="subtitle">Real-time API testing for FastTrack Navigation System</p>
-  </header>
-
-  <div class="container">
-    <!-- All Tests -->
-    <div class="card">
-      <h3>🚀 Full Test Suite</h3>
-      <p>Run complete integration test with 9 test cases. Creates new user, tests auth, routes, hazards, and more.</p>
-      <button onclick="runFullTest()">Run All Tests</button>
-      <div id="fullTestOutput" class="output"></div>
-      <div id="fullTestStatus" class="status"></div>
-    </div>
-
-    <!-- Quick Test -->
-    <div class="card">
-      <h3>⚡ Quick Test</h3>
-      <p>Login and retrieve user info. Good for quick verification.</p>
-      <div class="input-group">
-        <input type="email" id="quickEmail" placeholder="Email" value="test@example.com">
-        <input type="password" id="quickPassword" placeholder="Password" value="TestPass123!">
+<body class="console-page">
+  <div class="console-shell">
+    <header class="console-hero">
+      <div class="hero-brand">
+        <img src="../assets/logo.png" alt="FastTrack" class="hero-logo">
+        <div>
+          <p class="eyebrow">Integration Testing</p>
+          <h1>Frontend-Backend Console</h1>
+          <p class="hero-subtitle">Real-time API testing, auth checks, route checks, and a live bugs table in one workspace.</p>
+        </div>
       </div>
-      <button onclick="runQuickTest()">Quick Test</button>
-      <div id="quickTestOutput" class="output"></div>
-    </div>
 
-    <!-- Auth Tests -->
-    <div class="card">
-      <h3>🔐 Authentication Tests</h3>
-      <p>Test signup, login, logout, and user info endpoints.</p>
-      <div class="button-group">
-        <button onclick="testSignupOnly()">Sign Up</button>
-        <button onclick="testLoginOnly()">Login</button>
-        <button onclick="testGetMeOnly()">Get User</button>
-        <button onclick="testLogoutOnly()">Logout</button>
+      <div class="hero-chips" aria-label="Environment summary">
+        <span class="chip">API: http://localhost:3000</span>
+        <span class="chip">Frontend: http://localhost:3001</span>
+        <span class="chip">Bug table: live</span>
       </div>
-      <div id="authOutput" class="output"></div>
-    </div>
+    </header>
 
-    <!-- Route Tests -->
-    <div class="card">
-      <h3>🗺️ Route Tests</h3>
-      <p>Test route calculation, point snapping, and transit stops.</p>
-      <div class="button-group">
-        <button onclick="testRouteOnly()">Calculate Route</button>
-        <button onclick="testSnapOnly()">Snap Point</button>
-        <button onclick="testStopsOnly()">Transit Stops</button>
+    <main class="console-grid">
+      <section class="card">
+        <h3>🚀 Full Test Suite</h3>
+        <p>Run complete integration test with 9 test cases. Creates new user, tests auth, routes, hazards, and more.</p>
+        <button onclick="runFullTest()">Run All Tests</button>
+        <div id="fullTestOutput" class="output"></div>
+        <div id="fullTestStatus" class="status"></div>
+      </section>
+
+      <section class="card">
+        <h3>⚡ Quick Test</h3>
+        <p>Login and retrieve user info. Good for quick verification.</p>
+        <div class="input-group">
+          <input type="email" id="quickEmail" placeholder="Email" value="test@example.com">
+          <input type="password" id="quickPassword" placeholder="Password" value="TestPass123!">
+        </div>
+        <button onclick="runQuickTest()">Quick Test</button>
+        <div id="quickTestOutput" class="output"></div>
+      </section>
+
+      <section class="card">
+        <h3>🔐 Authentication Tests</h3>
+        <p>Test signup, login, logout, and user info endpoints.</p>
+        <div class="button-group">
+          <button onclick="testSignupOnly()">Sign Up</button>
+          <button onclick="testLoginOnly()">Login</button>
+          <button onclick="testGetMeOnly()">Get User</button>
+          <button onclick="testLogoutOnly()">Logout</button>
+        </div>
+        <div id="authOutput" class="output"></div>
+      </section>
+
+      <section class="card">
+        <h3>🗺️ Route Tests</h3>
+        <p>Test route calculation, point snapping, and transit stops.</p>
+        <div class="button-group">
+          <button onclick="testRouteOnly()">Calculate Route</button>
+          <button onclick="testSnapOnly()">Snap Point</button>
+          <button onclick="testStopsOnly()">Transit Stops</button>
+        </div>
+        <div id="routeOutput" class="output"></div>
+      </section>
+
+      <section class="card">
+        <h3>⚠️ Hazard Tests</h3>
+        <p>Test hazard reporting and retrieval.</p>
+        <div class="button-group">
+          <button onclick="testReportOnly()">Report Hazard</button>
+          <button onclick="testGetHazardsOnly()">Get Hazards</button>
+        </div>
+        <div id="hazardOutput" class="output"></div>
+      </section>
+
+      <section class="card full-width">
+        <h3>🐞 Bugs Table</h3>
+        <p>Load bug reports from the new bugs table and inspect the stored contents.</p>
+        <div class="button-group">
+          <button onclick="loadBugsTable()">Load Bugs Table</button>
+        </div>
+        <div id="bugsStatus" class="status"></div>
+        <div id="bugsOutput" class="output table-wrap"></div>
+      </section>
+
+      <section class="card full-width">
+        <h3>📊 Test Results Summary</h3>
+        <div id="testSummary">
+          <p style="color: var(--console-muted); text-align: center;">Run tests to see results</p>
+        </div>
+      </section>
+    </main>
+
+    <section class="card full-width console-footer">
+      <h3>📖 Instructions</h3>
+      <div class="footer-grid">
+        <div>
+          <div class="callout">
+            <strong>Backend Requirements</strong><br>
+            Make sure these are running: <code>docker compose up</code>
+          </div>
+          <div class="callout">
+            <strong>API Base URL</strong><br>
+            <code>http://localhost:3000</code>
+          </div>
+          <div class="callout">
+            <strong>Frontend Base URL</strong><br>
+            <code>http://localhost:3001</code>
+          </div>
+        </div>
+        <ul class="footer-list" aria-label="Test features">
+          <li>Full integration test: signup -> login -> routes -> hazards -> logout</li>
+          <li>Individual endpoint tests</li>
+          <li>Bug table viewer</li>
+          <li>Error handling verification</li>
+          <li>Real-time console output</li>
+          <li>Test summary statistics</li>
+        </ul>
       </div>
-      <div id="routeOutput" class="output"></div>
-    </div>
-
-    <!-- Hazard Tests -->
-    <div class="card">
-      <h3>⚠️ Hazard Tests</h3>
-      <p>Test hazard reporting and retrieval.</p>
-      <div class="button-group">
-        <button onclick="testReportOnly()">Report Hazard</button>
-        <button onclick="testGetHazardsOnly()">Get Hazards</button>
-      </div>
-      <div id="hazardOutput" class="output"></div>
-    </div>
-
-    <!-- Test Results Summary -->
-    <div class="card full-width">
-      <h3>📊 Test Results Summary</h3>
-      <div id="testSummary">
-        <p style="color: #999; text-align: center;">Run tests to see results</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Instructions -->
-  <div class="card full-width">
-    <h3>📖 Instructions</h3>
-    <p>
-      <strong>Backend Requirements:</strong><br>
-      Make sure these are running:
-    </p>
-    <code>docker compose up</code>
-    <br><br>
-    <p>
-      <strong>API Base URL:</strong> <code>http://localhost:3000</code><br>
-      <strong>Frontend Base URL:</strong> <code>http://localhost:3001</code>
-    </p>
-    <p style="margin-top: 15px; color: #999;">
-      <strong>Test Features:</strong><br>
-      ✓ Full integration test (signup → login → routes → hazards → logout)<br>
-      ✓ Individual endpoint tests<br>
-      ✓ Error handling verification<br>
-      ✓ Real-time console output<br>
-      ✓ Test summary statistics
-    </p>
+    </section>
   </div>
 
   <script src="../js/config.js"></script>
@@ -348,7 +655,7 @@
         testOutputs[outputId] = [];
       }
       testOutputs[outputId].push({ type, message, time: new Date().toLocaleTimeString() });
-      
+
       const element = document.getElementById(outputId);
       if (element) {
         const entry = document.createElement('div');
@@ -378,15 +685,15 @@
     async function runFullTest() {
       clearOutput('fullTestOutput');
       setStatus('fullTestStatus', 'running', '⏳ Running all tests...');
-      
+
       const results = await runAllTests();
-      
-      let passed = Object.values(results).filter(r => r.status === 'PASSED').length;
-      let failed = Object.values(results).filter(r => r.status !== 'PASSED').length;
-      
-      setStatus('fullTestStatus', passed === Object.keys(results).length ? 'success' : 'error', 
+
+      const passed = Object.values(results).filter(r => r.status === 'PASSED').length;
+      const failed = Object.values(results).filter(r => r.status !== 'PASSED').length;
+
+      setStatus('fullTestStatus', passed === Object.keys(results).length ? 'success' : 'error',
         `<strong>Results:</strong> ${passed}/${Object.keys(results).length} passed`);
-      
+
       updateSummary(results);
     }
 
@@ -394,22 +701,22 @@
       clearOutput('quickTestOutput');
       const email = document.getElementById('quickEmail').value;
       const password = document.getElementById('quickPassword').value;
-      
+
       if (!email || !password) {
         log('quickTestOutput', 'error', 'Please enter email and password');
         return;
       }
-      
+
       try {
         log('quickTestOutput', 'info', `Logging in as ${email}...`);
         const loginRes = await navigationAPI.login(email, password);
-        
+
         if (loginRes.success) {
           log('quickTestOutput', 'success', 'Login successful');
-          
+
           log('quickTestOutput', 'info', 'Fetching user info...');
           const meRes = await navigationAPI.getMe();
-          
+
           if (meRes.success) {
             log('quickTestOutput', 'success', `User: ${meRes.data.name} (${meRes.data.email})`);
           } else {
@@ -434,7 +741,7 @@
       const email = prompt('Enter email:');
       const password = prompt('Enter password:');
       if (!email || !password) return;
-      
+
       const result = await testLogin(email, password);
       log('authOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
     }
@@ -481,10 +788,84 @@
       log('hazardOutput', result.status === 'PASSED' ? 'success' : 'error', JSON.stringify(result));
     }
 
+    async function loadBugsTable() {
+      clearOutput('bugsOutput');
+      const statusEl = document.getElementById('bugsStatus');
+      if (statusEl) {
+        statusEl.className = 'status running';
+        statusEl.textContent = 'Loading bug reports...';
+      }
+
+      try {
+        const response = await navigationAPI.getBugs(200);
+        const bugs = Array.isArray(response.data) ? response.data : [];
+        const output = document.getElementById('bugsOutput');
+
+        if (!bugs.length) {
+          output.innerHTML = '<div class="empty-state">No bug reports stored yet.</div>';
+          if (statusEl) {
+            statusEl.className = 'status success';
+            statusEl.textContent = 'Bug table loaded: 0 rows';
+          }
+          return;
+        }
+
+        const rows = bugs.map((bug) => `
+          <tr>
+            <td>${escapeHtml(bug.createdAt || bug.created_at || '')}</td>
+            <td>${escapeHtml(bug.status || '')}</td>
+            <td>${escapeHtml(bug.category || '')}</td>
+            <td>${escapeHtml(bug.impact || '')}</td>
+            <td>${escapeHtml(bug.title || '')}</td>
+            <td>${escapeHtml((bug.source_page || '').replace(/^\//, ''))}</td>
+            <td>${escapeHtml((bug.extra_details || '').slice(0, 60))}</td>
+          </tr>
+        `).join('');
+
+        output.innerHTML = `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Category</th>
+                <th>Impact</th>
+                <th>Title</th>
+                <th>Source</th>
+                <th>Extra</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+
+        if (statusEl) {
+          statusEl.className = 'status success';
+          statusEl.textContent = `Loaded ${bugs.length} bug report${bugs.length === 1 ? '' : 's'}.`;
+        }
+      } catch (error) {
+        const output = document.getElementById('bugsOutput');
+        if (output) output.innerHTML = '';
+        if (statusEl) {
+          statusEl.className = 'status error';
+          statusEl.textContent = error.message || 'Could not load bug table.';
+        }
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function updateSummary(results) {
       const passed = Object.values(results).filter(r => r.status === 'PASSED').length;
       const failed = Object.values(results).filter(r => r.status !== 'PASSED').length;
-      
+
       const html = `
         <div class="summary">
           <div class="summary-item">
@@ -510,7 +891,8 @@
       `;
       document.getElementById('testSummary').innerHTML = html;
     }
-  </script>
 
+    loadBugsTable();
+  </script>
 </body>
 </html>

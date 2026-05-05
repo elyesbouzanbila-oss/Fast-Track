@@ -14,6 +14,7 @@ const logger = require('./utils/logger');
 // Import models to register them with Sequelize
 require('./models/User');
 require('./models/Hazard');
+require('./models/Bug');
 require('./models/TransitStop');
 require('./models/TransitRoute');
 require('./models/TransitTrip');
@@ -70,6 +71,7 @@ app.get('/', (req, res) => {
       reverseGeocode: 'GET  /api/route/reverse-geocode',
       autocomplete:   'GET  /api/route/autocomplete',
       hazards:        'GET  /api/hazards',
+      bugs:           'GET  /api/bugs',
     },
   });
 });
